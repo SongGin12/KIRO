@@ -138,7 +138,7 @@ Cada módulo se presenta con un estado explícito para evitar confusiones entre 
 | **En diseño** | Se está trabajando en su modelo o especificación; aún no es funcional. |
 | **Implementado** | Existe y puede demostrarse con evidencia en el repositorio. |
 
-> **Estado actual:** todos los módulos se encuentran en estado **Propuesto**. No hay funcionalidades implementadas que puedan presentarse como terminadas.
+> **Estado actual:** todos los módulos funcionales se encuentran en estado **Propuesto**; todavía no hay módulos funcionales completos implementados. La estructura inicial de la base de datos sí está implementada (ver secciones 9 y 15).
 
 ### Resumen de módulos
 
@@ -300,11 +300,11 @@ Las expresiones visuales de KIRO son **elementos de diseño de interacción**. N
 
 ### Contexto
 
-KIRO es un **proyecto individual** para la asignatura **Bases de Datos II** de la **Universidad de Los Andes (Unandes)**. El núcleo de persistencia y gestión de la información será **MySQL 8**.
+KIRO es un **proyecto individual** para la asignatura **Bases de Datos II** de la **Universidad de Los Andes (Unandes)**. El núcleo de persistencia y gestión de la información se implementó localmente en **MariaDB 10.4.32**; la propuesta tecnológica del backend contempla PHP 8.x y PDO.
 
 El proyecto busca que la organización del compañero digital no sea solo una idea de producto, sino una oportunidad para aplicar de forma coherente los contenidos de la asignatura: modelado, consultas, seguridad, automatización, transacciones y recuperación.
 
-El **modelo entidad-relación ya está elaborado con 12 entidades**, pero su implementación en MySQL todavía está pendiente. El diseño conceptual es la base para construir el esquema relacional y aplicar sobre él los contenidos académicos previstos.
+El **modelo entidad-relación ya está elaborado con 12 entidades** y su implementación inicial en MariaDB 10.4.32 está realizada: la base `Kiro` contiene las 12 tablas, sus claves y relaciones. El diseño conceptual sigue siendo la base para aplicar sobre él los contenidos académicos previstos.
 
 ### Competencias previstas
 
@@ -340,7 +340,7 @@ KIRO cuenta con un **modelo entidad-relación elaborado** que sirve como referen
 
 *Figura 1. Diagrama entidad-relación actualizado de KIRO (12 entidades).*
 
-El modelo conceptual está elaborado, pero **su implementación en MySQL todavía está pendiente**. No se han creado aún las tablas, relaciones ni restricciones del esquema físico.
+El modelo conceptual está elaborado y **su implementación inicial en MariaDB 10.4.32 ya fue realizada**. La base `Kiro` contiene las 12 tablas, sus relaciones y restricciones; el script canónico es `database/KIRO_MariaDB.sql`.
 
 ### Entidades incorporadas
 
@@ -374,14 +374,14 @@ Se agregó para registrar los accesos de los usuarios al sistema, conservando in
 |---|---|
 | Modelo entidad-relación | Elaborado y actualizado con 12 entidades |
 | Entidades `REGISTRO_USUARIO` e `INICIO_SESION` | Incorporadas al DER |
-| Esquema relacional | Pendiente de definición |
-| Implementación en MySQL | Pendiente |
+| Esquema relacional | Implementado en MariaDB 10.4.32 |
+| Implementación en la base de datos | Realizada en MariaDB 10.4.32 (base `Kiro`) |
 
 ---
 
 ## 10. Tecnologías propuestas
 
-La siguiente es una **propuesta tecnológica inicial** para el desarrollo de KIRO. Ninguna de estas herramientas se presenta como implementada: describen el stack previsto para comenzar la construcción del sistema.
+La siguiente es una **propuesta tecnológica inicial** para el desarrollo de KIRO. La única excepción es **MariaDB 10.4.32**, ya implementada en el entorno local; el resto de las herramientas describe el stack previsto para comenzar la construcción del sistema y no se presenta como implementado.
 
 ### Frontend
 
@@ -398,8 +398,8 @@ La siguiente es una **propuesta tecnológica inicial** para el desarrollo de KIR
 | Tecnología | Función | Justificación |
 |---|---|---|
 | **PHP 8.x** | Procesamiento de solicitudes, lógica del sistema, autenticación y comunicación con la base de datos. | Es un lenguaje adecuado para aplicaciones web y compatible con opciones de hosting accesibles para el proyecto. |
-| **PDO** | Acceso a MySQL desde PHP mediante consultas preparadas. | Facilita una interacción más segura con la base de datos y separa la lógica de acceso de la lógica de presentación. |
-| **MySQL 8** | Almacenamiento persistente de la información y aplicación de los contenidos académicos de Bases de Datos II. | Es el núcleo de persistencia del proyecto y permite trabajar integridad, consultas, transacciones, auditoría y recuperación. |
+| **PDO** | Acceso a MariaDB desde PHP mediante consultas preparadas. | Facilita una interacción más segura con la base de datos y separa la lógica de acceso de la lógica de presentación. |
+| **MariaDB 10.4.32** | Almacenamiento persistente de la información y aplicación de los contenidos académicos de Bases de Datos II. | Es el motor del entorno local ya implementado y permite trabajar integridad, consultas, transacciones, auditoría y recuperación. |
 
 ### Control de versiones
 
@@ -412,7 +412,7 @@ La siguiente es una **propuesta tecnológica inicial** para el desarrollo de KIR
 
 | Tecnología | Función | Justificación |
 |---|---|---|
-| **Hosting o servidor cloud compatible con PHP y MySQL** | Publicación de KIRO y disponibilidad mediante internet. | Permite que la aplicación funcione sin depender de que la computadora personal del desarrollador permanezca encendida. |
+| **Hosting o servidor cloud compatible con PHP y MariaDB** | Publicación de KIRO y disponibilidad mediante internet. | Permite que la aplicación funcione sin depender de que la computadora personal del desarrollador permanezca encendida. El proveedor y el motor/versión definitivos del despliegue futuro se confirmarán cuando se realice el despliegue. |
 
 > **Proveedor pendiente:** aún no se ha seleccionado un proveedor específico de hosting. La elección se realizará cuando el proyecto avance hacia el despliegue.
 
@@ -437,24 +437,26 @@ Backend PHP 8.x
 Capa de operaciones controladas
   │ validación · permisos · confirmación · trazabilidad
   ▼
-MySQL 8
+MariaDB 10.4.32 · entorno local implementado
   │ persistencia · integridad · auditoría
 ```
+
+> El diagrama describe la arquitectura prevista. La versión **MariaDB 10.4.32** corresponde al entorno local ya implementado; no debe interpretarse como versión confirmada del despliegue futuro.
 
 ### Componentes
 
 1. **Frontend:** interfaz web construida con HTML5, CSS3, JavaScript y Bootstrap 5. Presenta la información y permite la interacción del usuario con KIRO, incluyendo la representación 2D del compañero mediante SVG.
-2. **Backend:** desarrollado con PHP 8.x. Procesa las solicitudes, ejecuta la lógica de negocio, gestiona la autenticación y se comunica con MySQL mediante PDO.
-3. **Base de datos:** MySQL 8 almacena la información de forma persistente y aplica las restricciones de integridad del sistema.
-4. **Infraestructura cloud:** la versión publicada se alojará en un servidor externo compatible con PHP y MySQL, de modo que los usuarios puedan acceder a KIRO desde distintos dispositivos mediante internet.
+2. **Backend:** previsto con PHP 8.x. Procesa las solicitudes, ejecuta la lógica de negocio, gestiona la autenticación y se comunica con MariaDB mediante PDO.
+3. **Base de datos:** MariaDB 10.4.32 es el motor del entorno local ya implementado, donde la información se almacena de forma persistente y se aplican las restricciones de integridad del sistema; la versión del motor para el despliegue futuro está pendiente de confirmación.
+4. **Infraestructura cloud:** la versión publicada se alojará en un servidor externo compatible con PHP y MariaDB, de modo que los usuarios puedan acceder a KIRO desde distintos dispositivos mediante internet. El proveedor y la versión del motor se confirmarán al realizar el despliegue.
 
 ### Principio de acceso controlado
 
-KIRO **no tendrá acceso libre a MySQL** ni ejecutará consultas arbitrarias. Toda interacción con la base de datos pasará por una capa de operaciones definidas por el sistema, con validación de datos, verificación de permisos y confirmación cuando corresponda.
+KIRO **no tendrá acceso libre a MariaDB** ni ejecutará consultas arbitrarias. Toda interacción con la base de datos pasará por una capa de operaciones definidas por el sistema, con validación de datos, verificación de permisos y confirmación cuando corresponda.
 
 ### Entornos de desarrollo y publicación
 
-El desarrollo y las primeras pruebas podrán realizarse en un **entorno local**. La versión publicada, en cambio, estará alojada en una **infraestructura externa** compatible con PHP y MySQL. El proveedor de hosting aún no está definido.
+El desarrollo y las primeras pruebas podrán realizarse en un **entorno local**, donde la base `Kiro` ya está implementada en MariaDB 10.4.32. La versión publicada, en cambio, estará alojada en una **infraestructura externa** compatible con PHP y MariaDB. El proveedor de hosting y la versión definitiva del motor aún no están confirmados y se definirán al realizar el despliegue.
 
 ### Relación con hardware físico
 
@@ -472,7 +474,7 @@ Las contraseñas se almacenarán mediante funciones de hash seguro, como **Argon
 
 ### Consultas preparadas
 
-El acceso a MySQL se realizará con **PDO y consultas preparadas**, con el fin de reducir el riesgo de inyección SQL y mantener una separación clara entre los datos y las instrucciones SQL.
+El acceso a MariaDB se realizará con **PDO y consultas preparadas**, con el fin de reducir el riesgo de inyección SQL y mantener una separación clara entre los datos y las instrucciones SQL.
 
 ### Validación de datos
 
@@ -523,10 +525,10 @@ Las siguientes reglas orientan el diseño funcional y la futura implementación.
 
 - Propuesta conceptual y identidad del compañero digital.
 - Diseño de la experiencia de interacción por texto y voz.
-- Aplicación web con frontend, backend y persistencia en MySQL, sujeta al alcance académico.
+- Aplicación web con frontend, backend y persistencia en MariaDB, sujeta al alcance académico.
 - Modelo entidad-relación elaborado con 12 entidades y su documentación técnica.
 - Capa de operaciones controladas con validación, permisos y trazabilidad.
-- Implementación del núcleo de persistencia en MySQL, con los elementos de Bases de Datos II que el alcance permita.
+- Implementación inicial del núcleo de persistencia en MariaDB, ya realizada en el entorno local; quedan pendientes las vistas, los procedimientos almacenados, las funciones, los triggers, las transacciones y los mecanismos de auditoría, según corresponda al alcance académico.
 - Documentación del estado real del proyecto y de sus decisiones de diseño.
 
 ### Fuera del alcance
@@ -555,43 +557,67 @@ Solo si no desplazan el propósito principal, podrían considerarse mejoras como
 
 ## 15. Estado actual del proyecto
 
-**Estado general:** etapa de planificación técnica e inicio de preparación del desarrollo.
+**Estado general:** planificación conceptual definida y en actualización, con la base de datos implementada y datos de prueba verificados; el desarrollo de la aplicación aún no ha comenzado.
 
-El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entidad-relación elaborado. Actualmente se están estableciendo las tecnologías, la arquitectura y las prioridades para comenzar la implementación del sistema.
+El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entidad-relación de 12 entidades. La base de datos `Kiro` ya fue creada en MariaDB 10.4.32 con las 12 tablas, sus claves y sus relaciones implementadas. Las vistas, los procedimientos almacenados, las funciones, los triggers, las transacciones y los mecanismos de auditoría continúan pendientes de implementación, al igual que la interfaz web y los módulos funcionales. El análisis de índices con `EXPLAIN` está parcialmente avanzado y debe completarse y documentarse.
 
 | Elemento | Estado |
 |---|---|
 | Documento conceptual y planificación | Definidos; en actualización |
 | Identidad y personalidad de KIRO | Definidas a nivel conceptual |
-| Diseño de la base de datos | Modelo conceptual elaborado; pendiente de implementación |
+| Diseño de la base de datos | Plan técnico documentado; en revisión |
 | Modelo entidad-relación | Elaborado y actualizado con 12 entidades |
 | Entidades de registro e inicio de sesión | Incorporadas al DER |
 | Tecnologías y arquitectura | Definidas como propuesta tecnológica inicial |
+| Entorno de base de datos | MariaDB 10.4.32 |
+| Base de datos `Kiro` | Creada e implementada |
+| Tablas | 12 tablas implementadas |
+| Claves primarias | 12 definidas |
+| Claves foráneas | 14 definidas, incluidas las relaciones compuestas |
+| Relaciones e integridad referencial | Verificadas mediante inserciones en el entorno local |
+| Datos de prueba | 120 registros insertados y verificados en el entorno local; la evidencia de servidor (`SHOW TABLE STATUS` y `SELECT COUNT(*)`) aún no está archivada en el repositorio |
+| Índices del esquema | 19 índices secundarios definidos: 5 `UNIQUE` (3 simples y 2 compuestos) y 14 `KEY` (3 simples y 11 compuestos), además de los 12 índices de clave primaria |
+| Análisis de índices y evidencias con `EXPLAIN` | Parcialmente avanzado: práctica inicial en `db_ecommerce`; pendiente de aplicar y documentar en `Kiro` |
+| Vistas, procedimientos almacenados, funciones y triggers | Pendientes de implementación |
+| Transacciones y mecanismos de auditoría | Pendientes de implementación |
 | Interfaz de usuario | Pendiente de diseño e implementación |
 | Compañero digital 2D | Definido como primera versión; pendiente de desarrollo |
 | Compañero digital 3D | Considerado como ampliación futura |
 | Módulos funcionales | Especificados conceptualmente; pendientes de implementación |
-| Base de datos MySQL | Pendiente de creación e implementación |
-| Pruebas y validación | Pendientes |
+| Pruebas funcionales de la aplicación | Pendientes |
 | Despliegue en infraestructura cloud | Previsto; pendiente de configuración |
 | Integraciones externas | Fuera del alcance inicial, sujetas a futuras necesidades |
 
 ### Próximos pasos previstos
 
-1. Finalizar la documentación del diseño de la base de datos y sus reglas de integridad.
-2. Definir la estructura relacional y crear la base de datos en MySQL.
-3. Diseñar la interfaz web y la representación inicial del compañero digital en 2D.
-4. Implementar el backend en PHP y conectar los módulos con MySQL.
-5. Desarrollar progresivamente los módulos principales de KIRO.
-6. Incorporar procedimientos, funciones, vistas, índices, triggers, transacciones y mecanismos de auditoría, de acuerdo con los objetivos académicos de Bases de Datos II.
-7. Realizar pruebas funcionales, validar las operaciones y documentar evidencias.
-8. Preparar el despliegue de la aplicación en un servidor cloud.
+1. Finalizar la revisión del plan técnico de la base de datos y sus reglas de integridad.
+2. Definir y documentar las vistas requeridas por los objetivos académicos de Bases de Datos II.
+3. Aplicar `EXPLAIN` sobre consultas de KIRO, analizar búsquedas y operaciones `JOIN`, evaluar la selectividad y el orden de columnas en los índices compuestos, justificar los índices existentes, analizar su costo de mantenimiento y los posibles índices adicionales, y documentar las evidencias obtenidas.
+4. Implementar los procedimientos almacenados y las funciones de las operaciones principales.
+5. Implementar los triggers y los mecanismos de auditoría, incluida la validación de `HISTORIAL_ACCION`.
+6. Incorporar transacciones y validar la integridad en operaciones concurrentes.
+7. Documentar las evidencias de pruebas de la base de datos para la evaluación de Bases de Datos II.
+8. Diseñar la interfaz web y la representación inicial del compañero digital en 2D.
+9. Implementar el backend en PHP y conectar los módulos con la base de datos.
+10. Desarrollar progresivamente los módulos principales de KIRO.
+11. Realizar pruebas funcionales, validar las operaciones y documentar evidencias.
+12. Preparar el despliegue de la aplicación en un servidor cloud.
 
 > Este documento refleja el estado real de planificación y desarrollo de KIRO. Las funcionalidades descritas como pendientes o previstas no deben interpretarse como implementadas hasta contar con evidencia verificable.
 
 ---
 
 ## 16. Historial de cambios
+
+### 11 de noviembre de 2026
+
+- Actualización del entorno de base de datos a **MariaDB 10.4.32**.
+- Creación de la base de datos `Kiro` con charset `utf8mb4` y collation `utf8mb4_unicode_ci`.
+- Implementación de las **12 tablas** del modelo entidad-relación.
+- Definición de **12 claves primarias** y **14 restricciones de clave foránea**, incluidas las relaciones compuestas de `NOTA`, `RECURSO` y `ACTIVIDAD`.
+- Verificación de las relaciones mediante las inserciones de prueba en el entorno local.
+- Inserción y verificación de **120 registros de prueba**, 10 por tabla, en el entorno local; la evidencia de servidor (`SHOW TABLE STATUS` y `SELECT COUNT(*)`) aún no está archivada en el repositorio.
+- Incorporación del script SQL `database/KIRO_MariaDB.sql` al proyecto.
 
 ### 7 de noviembre de 2026
 
