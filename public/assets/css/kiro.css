@@ -1,0 +1,227 @@
+/* =====================================================================
+   KIRO - Personaje (SVG + CSS)
+   Tres estados: normal (respira, parpadea, mueve cola y orejas),
+   feliz (ojos cerrados, sonrisa y destellos) y pensativa (párpados
+   entornados, cabeza ladeada y puntos suspensivos).
+   Solo se animan transform y opacity para no forzar repintados.
+   ===================================================================== */
+
+.gato {
+  width: min(360px, 78vw);
+  margin: 0 auto;
+  line-height: 0;
+}
+
+.gato-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.gato--mini {
+  width: 100%;
+}
+
+.gato-sombra {
+  fill: rgba(52, 68, 95, .13);
+}
+
+.gato-mejilla {
+  opacity: .45;
+  transition: opacity .22s ease;
+}
+
+/* La cabeza se ladea ligeramente en el estado pensativa */
+.gato-cabeza {
+  transform-box: fill-box;
+  transform-origin: 50% 92%;
+  transition: transform .3s ease;
+}
+
+/* Respiración suave del personaje completo */
+.gato-animado {
+  transform-box: fill-box;
+  transform-origin: 50% 96%;
+  animation: kiro-respirar 4.8s ease-in-out infinite;
+}
+
+/* Cola: oscila desde su base */
+.gato-cola {
+  transform-box: fill-box;
+  transform-origin: 6% 94%;
+  animation: kiro-cola 4.2s ease-in-out infinite;
+}
+
+/* Orejas: pequeño movimiento cada 9 s, una detrás de la otra */
+.gato-oreja {
+  transform-box: fill-box;
+  animation: kiro-oreja 9.4s ease-in-out infinite;
+}
+
+.gato-oreja--izq {
+  transform-origin: 88% 90%;
+}
+
+.gato-oreja--der {
+  transform-origin: 12% 90%;
+  animation-delay: .22s;
+}
+
+/* Parpadeo: los ojos se cierran un instante cada 6,4 s */
+.ojos-normales {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: kiro-parpadeo 6.4s ease-in-out infinite;
+}
+
+.boca-normal {
+  opacity: 1;
+  transition: opacity .16s ease;
+}
+
+.ojos-feliz,
+.boca-feliz,
+.ojos-pensativa,
+.boca-pensativa,
+.puntos-pensativa {
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
+.destellos {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity .2s ease;
+}
+
+/* ----------------------------- Estado feliz ----------------------- */
+.gato[data-estado="feliz"] .ojos-normales,
+.gato[data-estado="feliz"] .boca-normal {
+  opacity: 0;
+}
+
+.gato[data-estado="feliz"] .ojos-feliz,
+.gato[data-estado="feliz"] .boca-feliz {
+  opacity: 1;
+}
+
+.gato[data-estado="feliz"] .gato-mejilla {
+  opacity: .8;
+}
+
+.gato[data-estado="feliz"] .gato-animado {
+  animation:
+    kiro-saltito .62s cubic-bezier(.34, 1.56, .64, 1) 2,
+    kiro-respirar 4.8s ease-in-out 1.24s infinite;
+}
+
+.gato[data-estado="feliz"] .gato-cola {
+  animation: kiro-cola-feliz .5s ease-in-out infinite alternate;
+}
+
+.gato[data-estado="feliz"] .destellos {
+  opacity: 1;
+  animation: kiro-destello .9s ease-in-out infinite alternate;
+}
+
+/* -------------------------- Estado pensativa ---------------------- */
+.gato[data-estado="pensativa"] .ojos-normales,
+.gato[data-estado="pensativa"] .boca-normal {
+  opacity: 0;
+}
+
+.gato[data-estado="pensativa"] .ojos-pensativa,
+.gato[data-estado="pensativa"] .boca-pensativa,
+.gato[data-estado="pensativa"] .puntos-pensativa {
+  opacity: 1;
+}
+
+.gato[data-estado="pensativa"] .gato-cabeza {
+  transform: rotate(-3deg);
+}
+
+.gato[data-estado="pensativa"] .gato-animado {
+  animation: kiro-respirar 6.4s ease-in-out infinite;
+}
+
+.gato[data-estado="pensativa"] .gato-cola {
+  animation-duration: 6.2s;
+}
+
+/* ------------------------------ Keyframes ------------------------- */
+@keyframes kiro-respirar {
+  0%, 100% { transform: scale(1, 1); }
+  50%      { transform: scale(1.008, 1.018); }
+}
+
+@keyframes kiro-cola {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-8deg); }
+}
+
+@keyframes kiro-cola-feliz {
+  from { transform: rotate(-12deg); }
+  to   { transform: rotate(12deg); }
+}
+
+@keyframes kiro-parpadeo {
+  0%, 88%, 100% { transform: scaleY(1); }
+  90%, 92%      { transform: scaleY(.06); }
+  94%           { transform: scaleY(1); }
+}
+
+@keyframes kiro-oreja {
+  0%, 84%, 100% { transform: rotate(0deg); }
+  87%           { transform: rotate(-6deg); }
+  90%           { transform: rotate(3deg); }
+  93%           { transform: rotate(0deg); }
+}
+
+@keyframes kiro-saltito {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  35%      { transform: translateY(-10px) scale(.99, 1.02); }
+  70%      { transform: translateY(0) scale(1.02, .98); }
+}
+
+@keyframes kiro-destello {
+  from { opacity: .35; transform: scale(.94); }
+  to   { opacity: 1;   transform: scale(1.04); }
+}
+
+/* ------------------------ Versión menú lateral -------------------- */
+/* En 46 px los detalles finos estorban: se ocultan y se calma el ritmo. */
+.gato--mini .gato-bigotes,
+.gato--mini .gato-dedos,
+.gato--mini .gato-mejilla,
+.gato--mini .gato-sombra,
+.gato--mini .puntos-pensativa {
+  display: none;
+}
+
+.marca-gato .gato-animado,
+.marca-gato .gato-oreja,
+.marca-gato .gato-cabeza {
+  animation: none;
+  transition: none;
+}
+
+.marca-gato .gato-cola {
+  animation-duration: 5.6s;
+}
+
+/* ------------------------ Movimiento reducido --------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .gato-animado,
+  .gato-cola,
+  .gato-oreja,
+  .ojos-normales,
+  .destellos {
+    animation: none !important;
+  }
+
+  .gato-cabeza {
+    transition: none;
+  }
+}

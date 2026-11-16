@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------
+# KIRO - archivos que nunca deben llegar al repositorio
+# ---------------------------------------------------------------
+
+# Configuracion con credenciales reales (se versiona el .example)
+app/config/config.php
+.env
+
+# Registros y archivos temporales
+storage/logs/*
+!storage/logs/.gitkeep
+*.log
+*.tmp
+
+# Entorno de editor y sistema operativo
+.idea/
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Dependencias futuras (por si se incorpora Composer mas adelante)
+vendor/

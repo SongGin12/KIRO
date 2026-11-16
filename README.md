@@ -4,7 +4,7 @@
 
 **KIRO** es una aplicación web que funciona como compañero digital interactivo y colaborativo: un personaje con identidad visual y personalidad propia que comparte con el usuario un entorno de información, lo acompaña en sus actividades personales y participa en la organización de sus proyectos y tareas.
 
-> **Documento conceptual y de planificación.** Este README describe la propuesta, el alcance previsto, la arquitectura inicial y los objetivos académicos del proyecto. No constituye evidencia de funcionalidades implementadas.
+> **Documento conceptual y de estado.** Este README describe la propuesta, el alcance previsto, la arquitectura y los objetivos académicos del proyecto, y documenta el estado real de lo implementado: el núcleo de base de datos con sus objetos SQL y una aplicación PHP local de consulta (solo lectura). Cada elemento se presenta indicando si está implementado, en diseño o propuesto.
 
 ---
 
@@ -138,7 +138,7 @@ Cada módulo se presenta con un estado explícito para evitar confusiones entre 
 | **En diseño** | Se está trabajando en su modelo o especificación; aún no es funcional. |
 | **Implementado** | Existe y puede demostrarse con evidencia en el repositorio. |
 
-> **Estado actual:** todos los módulos funcionales se encuentran en estado **Propuesto**; todavía no hay módulos funcionales completos implementados. La estructura inicial de la base de datos sí está implementada (ver secciones 9 y 15).
+> **Estado actual:** los módulos funcionales permanecen en estado **Propuesto** como módulos completos (con creación y edición de datos). Lo implementado hasta la fecha es la infraestructura de datos (12 tablas, vistas, funciones, procedimientos, triggers y permisos de mínimo privilegio) y una aplicación PHP local de **solo lectura** que consulta datos de agenda, proyectos y actividades para las páginas Inicio y Configuración (ver secciones 9, 12 y 15). La identidad visual 2D del compañero y un panel de chat de demostración (sin IA) ya se muestran en la interfaz.
 
 ### Resumen de módulos
 
@@ -268,7 +268,7 @@ El diseño debe ser **original**. No se copiarán personajes protegidos de pelí
 
 La primera versión de KIRO contará con un compañero digital representado en **2D**, utilizando **SVG, CSS3 y JavaScript**. Esta decisión responde principalmente a la disponibilidad de tiempo para desarrollar el proyecto: se priorizará terminar una aplicación funcional, con sus módulos principales y su base de datos correctamente implementada, antes de invertir tiempo en una representación tridimensional.
 
-El formato 2D permite construir una identidad visual clara y expresiva sin comprometer el avance de la funcionalidad. La representación del personaje se encuentra **pendiente de desarrollo**; su inclusión en este documento describe la estrategia prevista, no un componente terminado.
+El formato 2D permite construir una identidad visual clara y expresiva sin comprometer el avance de la funcionalidad. La primera versión del personaje **ya está implementada** en la interfaz local: un compañero felino dibujado en **SVG** (`app/views/partials/kiro-gato.php`) con estados de reposo, felicidad y pensamiento, animado con CSS. La propuesta original de un robot pequeño se concretó en esta primera versión como un gato 2D; es un elemento visual y de interacción, sin inteligencia artificial detrás.
 
 ### Representación 3D: ampliación futura
 
@@ -300,7 +300,7 @@ Las expresiones visuales de KIRO son **elementos de diseño de interacción**. N
 
 ### Contexto
 
-KIRO es un **proyecto individual** para la asignatura **Bases de Datos II** de la **Universidad de Los Andes (Unandes)**. El núcleo de persistencia y gestión de la información se implementó localmente en **MariaDB 10.4.32**; la propuesta tecnológica del backend contempla PHP 8.x y PDO.
+KIRO es un **proyecto individual** para la asignatura **Bases de Datos II** de la **Universidad de Los Andes (Unandes)**. El núcleo de persistencia se implementó localmente en **MariaDB 10.4.32**, incluyendo vistas, funciones almacenadas, procedimientos, triggers y permisos de mínimo privilegio (estado al 15 de noviembre de 2026); el backend en **PHP 8.x con PDO**, también implementado localmente, ofrece una interfaz de consulta de solo lectura.
 
 El proyecto busca que la organización del compañero digital no sea solo una idea de producto, sino una oportunidad para aplicar de forma coherente los contenidos de la asignatura: modelado, consultas, seguridad, automatización, transacciones y recuperación.
 
@@ -381,7 +381,7 @@ Se agregó para registrar los accesos de los usuarios al sistema, conservando in
 
 ## 10. Tecnologías propuestas
 
-La siguiente es una **propuesta tecnológica inicial** para el desarrollo de KIRO. La única excepción es **MariaDB 10.4.32**, ya implementada en el entorno local; el resto de las herramientas describe el stack previsto para comenzar la construcción del sistema y no se presenta como implementado.
+La siguiente es una **propuesta tecnológica inicial** para el desarrollo de KIRO. Están implementadas en el entorno local: **MariaDB 10.4.32**, **PHP 8.x** y **PDO**. El frontend actual usa HTML5, CSS3 (hojas de estilo propias) y JavaScript sin librerías; **Bootstrap 5** continúa siendo una propuesta y no se utiliza en la aplicación actual.
 
 ### Frontend
 
@@ -390,7 +390,7 @@ La siguiente es una **propuesta tecnológica inicial** para el desarrollo de KIR
 | **HTML5** | Estructura y organización del contenido de las páginas web. | Proporciona una base estándar, semántica y accesible para la interfaz. |
 | **CSS3** | Diseño visual, estilos, distribución de elementos y animaciones. | Permite construir la identidad visual de KIRO y adaptar la presentación a distintos tamaños de pantalla. |
 | **JavaScript** | Interactividad, comportamiento dinámico y comunicación con el backend. | Aporta la lógica del cliente necesaria para las interacciones y las solicitudes al servidor. |
-| **Bootstrap 5** | Componentes y sistema de rejilla para una interfaz adaptable. | Facilita una experiencia usable en computadoras, tablets y celulares sin desarrollar todo el sistema visual desde cero. |
+| **Bootstrap 5** | Componentes y sistema de rejilla para una interfaz adaptable. | Propuesto; la interfaz local actual no lo utiliza y emplea hojas de estilo propias. Se evaluará su incorporación si el proyecto avanza hacia más vistas. |
 | **SVG** | Representación gráfica del compañero digital en 2D mediante elementos vectoriales. | Permite un personaje escalable, ligero y animable con CSS y JavaScript. |
 
 ### Backend
@@ -429,7 +429,7 @@ Usuario
   │ HTTPS
   ▼
 Frontend web
-  │ HTML5 · CSS3 · JavaScript · Bootstrap 5 · SVG
+  │ HTML5 · CSS3 (propio) · JavaScript · SVG
   ▼
 Backend PHP 8.x
   │ lógica de negocio · autenticación · PDO
@@ -445,8 +445,8 @@ MariaDB 10.4.32 · entorno local implementado
 
 ### Componentes
 
-1. **Frontend:** interfaz web construida con HTML5, CSS3, JavaScript y Bootstrap 5. Presenta la información y permite la interacción del usuario con KIRO, incluyendo la representación 2D del compañero mediante SVG.
-2. **Backend:** previsto con PHP 8.x. Procesa las solicitudes, ejecuta la lógica de negocio, gestiona la autenticación y se comunica con MariaDB mediante PDO.
+1. **Frontend:** implementado en el entorno local con HTML5, CSS3 (hojas de estilo propias, sin librerías) y JavaScript. Presenta las páginas Inicio y Configuración, la representación 2D del compañero mediante SVG y un panel de chat de demostración.
+2. **Backend:** implementado localmente con PHP 8.x. Procesa las solicitudes a través de `app/bootstrap.php`, organiza el acceso a datos en un repositorio (`app/src/RepositorioInicio.php`) y se comunica con MariaDB mediante PDO. La autenticación está prevista, no implementada.
 3. **Base de datos:** MariaDB 10.4.32 es el motor del entorno local ya implementado, donde la información se almacena de forma persistente y se aplican las restricciones de integridad del sistema; la versión del motor para el despliegue futuro está pendiente de confirmación.
 4. **Infraestructura cloud:** la versión publicada se alojará en un servidor externo compatible con PHP y MariaDB, de modo que los usuarios puedan acceder a KIRO desde distintos dispositivos mediante internet. El proveedor y la versión del motor se confirmarán al realizar el despliegue.
 
@@ -466,15 +466,23 @@ La arquitectura podrá contemplar en el futuro una conexión con hardware físic
 
 ## 12. Seguridad prevista
 
-Las siguientes medidas son **criterios de seguridad previstos** para el desarrollo. No describen funcionalidades ya implementadas.
+Las siguientes medidas combinan criterios ya implementados y criterios previstos; cada una indica su estado.
 
-### Protección de contraseñas
+### Protección de contraseñas (previsto)
 
-Las contraseñas se almacenarán mediante funciones de hash seguro, como **Argon2id** o **bcrypt**, nunca en texto plano.
+Las contraseñas se almacenarán mediante funciones de hash seguro, como **Argon2id** o **bcrypt**, nunca en texto plano. La aplicación actual no tiene autenticación, por lo que esta medida aún no entra en juego.
 
-### Consultas preparadas
+### Consultas preparadas (implementado)
 
-El acceso a MariaDB se realizará con **PDO y consultas preparadas**, con el fin de reducir el riesgo de inyección SQL y mantener una separación clara entre los datos y las instrucciones SQL.
+El acceso a MariaDB **ya se realiza con PDO y consultas preparadas reales** (sin emulación, preparadas en el servidor), con el fin de reducir el riesgo de inyección SQL y mantener una separación clara entre los datos y las instrucciones SQL. Las consultas del repositorio usan parámetros vinculados.
+
+### Permisos de mínimo privilegio (implementado)
+
+La aplicación se conecta con un usuario dedicado (`kiro_app`) que recibe, a través del rol `rol_kiro_app`, únicamente el permiso `SELECT` sobre las cinco tablas que consulta (`USUARIO`, `PERFIL_KIRO`, `CITA`, `ACTIVIDAD`, `PROYECTO`). No se conceden `INSERT`, `UPDATE`, `DELETE`, `CREATE` ni `EXECUTE`. La documentación reproducible vive en `database/objetos/05_permisos.sql` y no contiene contraseñas.
+
+### Configuración excluida del repositorio (implementado)
+
+El archivo con las credenciales reales (`app/config/config.php`) está excluido del repositorio mediante `.gitignore`. Se versiona únicamente `app/config/config.example.php`, con marcadores de posición para que cada instalador defina sus credenciales localmente.
 
 ### Validación de datos
 
@@ -484,17 +492,15 @@ La información se validará tanto en el **frontend** como en el **backend**. La
 
 El entorno de despliegue utilizará **HTTPS** para proteger la comunicación entre el navegador y el servidor.
 
-### Autenticación y sesiones
+### Autenticación y sesiones (previsto)
 
-Se implementarán mecanismos de **autenticación y control de sesiones** de usuario, apoyados por el registro de accesos previsto en `INICIO_SESION`.
+Se implementarán mecanismos de **autenticación y control de sesiones** de usuario, apoyados por el registro de accesos previsto en `INICIO_SESION`. La aplicación actual no incluye autenticación.
 
 ### Operaciones y trazabilidad
 
-- El compañero no generará SQL directo ni recibirá credenciales de la base de datos.
-- Cada operación pertenecerá a un catálogo explícito de herramientas.
-- Las operaciones sensibles o destructivas requerirán confirmación del usuario.
-- Las operaciones importantes conservarán trazabilidad para auditoría y recuperación de contexto.
-- Los errores se comunicarán de forma comprensible, sin exponer detalles internos innecesarios.
+- El trigger `trg_auditoria_actividad` ya registra en `HISTORIAL_ACCION` las actualizaciones realizadas sobre `ACTIVIDAD`, conservando el titulo anterior de la actividad y su estado anterior y nuevo (implementado).
+- El catálogo de herramientas del compañero y la confirmación de operaciones sensibles siguen previstos: el compañero no genera SQL directo ni recibe credenciales de la base de datos.
+- Los errores se registran en `storage/logs/error.log` y al navegador solo llega un mensaje genérico, sin detalles internos (implementado).
 
 ---
 
@@ -528,7 +534,8 @@ Las siguientes reglas orientan el diseño funcional y la futura implementación.
 - Aplicación web con frontend, backend y persistencia en MariaDB, sujeta al alcance académico.
 - Modelo entidad-relación elaborado con 12 entidades y su documentación técnica.
 - Capa de operaciones controladas con validación, permisos y trazabilidad.
-- Implementación inicial del núcleo de persistencia en MariaDB, ya realizada en el entorno local; quedan pendientes las vistas, los procedimientos almacenados, las funciones, los triggers, las transacciones y los mecanismos de auditoría, según corresponda al alcance académico.
+- Implementación del núcleo de persistencia en MariaDB y de los objetos SQL académicos: 4 vistas, 5 funciones, 2 procedimientos almacenados (uno con transacción y validación de solapamientos, otro con cursor), 2 triggers (validación y auditoría) y permisos de mínimo privilegio, exportados a `database/objetos/`.
+- Aplicación web local de consulta (solo lectura) con PHP 8.x y PDO, conectada con el usuario de mínimo privilegio.
 - Documentación del estado real del proyecto y de sus decisiones de diseño.
 
 ### Fuera del alcance
@@ -557,9 +564,9 @@ Solo si no desplazan el propósito principal, podrían considerarse mejoras como
 
 ## 15. Estado actual del proyecto
 
-**Estado general:** planificación conceptual definida y en actualización, con la base de datos implementada y datos de prueba verificados; el desarrollo de la aplicación aún no ha comenzado.
+**Estado general:** base de datos completa con sus objetos SQL y permisos de mínimo privilegio, y aplicación PHP local funcional de **solo lectura** (páginas Inicio y Configuración). Sin autenticación, sin operaciones CRUD y sin inteligencia artificial: son parte del alcance posterior.
 
-El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entidad-relación de 12 entidades. La base de datos `Kiro` ya fue creada en MariaDB 10.4.32 con las 12 tablas, sus claves y sus relaciones implementadas. Las vistas, los procedimientos almacenados, las funciones, los triggers, las transacciones y los mecanismos de auditoría continúan pendientes de implementación, al igual que la interfaz web y los módulos funcionales. El análisis de índices con `EXPLAIN` está parcialmente avanzado y debe completarse y documentarse.
+El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entidad-relación de 12 entidades. La base `Kiro` (MariaDB 10.4.32) contiene las 12 tablas, sus claves, relaciones e índices, además de 4 vistas, 5 funciones almacenadas, 2 procedimientos almacenados, 2 triggers y un rol de aplicación con permisos de mínimo privilegio. La aplicación PHP local se conecta mediante PDO con consultas preparadas y consulta los datos para sus páginas Inicio y Configuración. El análisis de índices con `EXPLAIN` sigue pendiente de aplicar y documentar sobre `Kiro`.
 
 | Elemento | Estado |
 |---|---|
@@ -578,36 +585,49 @@ El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entida
 | Datos de prueba | 120 registros insertados y verificados en el entorno local; la evidencia de servidor (`SHOW TABLE STATUS` y `SELECT COUNT(*)`) aún no está archivada en el repositorio |
 | Índices del esquema | 19 índices secundarios definidos: 5 `UNIQUE` (3 simples y 2 compuestos) y 14 `KEY` (3 simples y 11 compuestos), además de los 12 índices de clave primaria |
 | Análisis de índices y evidencias con `EXPLAIN` | Parcialmente avanzado: práctica inicial en `db_ecommerce`; pendiente de aplicar y documentar en `Kiro` |
-| Vistas, procedimientos almacenados, funciones y triggers | Pendientes de implementación |
-| Transacciones y mecanismos de auditoría | Pendientes de implementación |
-| Interfaz de usuario | Pendiente de diseño e implementación |
-| Compañero digital 2D | Definido como primera versión; pendiente de desarrollo |
+| Vistas | 4 implementadas: `vw_kiro_proximas_citas`, `vw_kiro_actividades_pendientes`, `vw_kiro_proyectos_activos` y `vw_kiro_notas_categorias` |
+| Funciones almacenadas | 5 implementadas: conteos de actividades pendientes, proyectos activos, notas y recursos, y cálculo de fecha y hora de fin de una cita |
+| Procedimientos almacenados | 2 implementados: `sp_registrar_cita_segura` (validación de datos, control de solapamientos y transacción con `COMMIT`/`ROLLBACK`) y `sp_resumir_actividades_usuario` (recorrido con cursor y resumen por estado) |
+| Triggers | 2 implementados: `trg_validar_actividad` (`BEFORE INSERT` sobre `ACTIVIDAD`) y `trg_auditoria_actividad` (`AFTER UPDATE`, escribe en `HISTORIAL_ACCION`) |
+| Transacciones | Implementadas dentro de `sp_registrar_cita_segura` |
+| Auditoría | Trigger de auditoría implementado; el catálogo de herramientas y la trazabilidad de operaciones del compañero siguen previstos |
+| Roles y permisos | Implementados: rol `rol_kiro_app` con `SELECT` sobre las 5 tablas que consulta la aplicación; usuario `kiro_app` con el rol asignado y predeterminado; scripts reproducibles en `database/objetos/05_permisos.sql` (sin credenciales) |
+| Objetos SQL versionados | Definiciones exportadas y verificadas en `database/objetos/` (vistas, funciones, procedimientos, triggers y permisos); por el `DEFINER`, su ejecución requiere cuenta administradora |
+| Interfaz de usuario | Implementada en el entorno local, de solo lectura: páginas Inicio (`public/index.php`) y Configuración (`public/configuracion.php`), con conexión verificada mediante el usuario de mínimo privilegio |
+| Compañero digital 2D | Primera versión implementada: personaje en SVG con estados normal, feliz y pensativa, animado con CSS |
+| Chat del compañero | Panel de demostración implementado (mensajes guardados en `sessionStorage` del navegador); sin conexión a IA ni a la base de datos |
 | Compañero digital 3D | Considerado como ampliación futura |
-| Módulos funcionales | Especificados conceptualmente; pendientes de implementación |
-| Pruebas funcionales de la aplicación | Pendientes |
+| Módulos funcionales | Especificados conceptualmente; la aplicación actual solo consulta datos (sin creación ni edición) |
+| Configuración de la aplicación | Archivo local `config.php` excluido del repositorio mediante `.gitignore`; versionado únicamente `config.example.php` sin credenciales |
+| Pruebas funcionales de la aplicación | Pruebas básicas de conexión y navegación verificadas en el entorno local; pruebas sistemáticas pendientes |
 | Despliegue en infraestructura cloud | Previsto; pendiente de configuración |
 | Integraciones externas | Fuera del alcance inicial, sujetas a futuras necesidades |
 
 ### Próximos pasos previstos
 
 1. Finalizar la revisión del plan técnico de la base de datos y sus reglas de integridad.
-2. Definir y documentar las vistas requeridas por los objetivos académicos de Bases de Datos II.
-3. Aplicar `EXPLAIN` sobre consultas de KIRO, analizar búsquedas y operaciones `JOIN`, evaluar la selectividad y el orden de columnas en los índices compuestos, justificar los índices existentes, analizar su costo de mantenimiento y los posibles índices adicionales, y documentar las evidencias obtenidas.
-4. Implementar los procedimientos almacenados y las funciones de las operaciones principales.
-5. Implementar los triggers y los mecanismos de auditoría, incluida la validación de `HISTORIAL_ACCION`.
-6. Incorporar transacciones y validar la integridad en operaciones concurrentes.
-7. Documentar las evidencias de pruebas de la base de datos para la evaluación de Bases de Datos II.
-8. Diseñar la interfaz web y la representación inicial del compañero digital en 2D.
-9. Implementar el backend en PHP y conectar los módulos con la base de datos.
-10. Desarrollar progresivamente los módulos principales de KIRO.
-11. Realizar pruebas funcionales, validar las operaciones y documentar evidencias.
-12. Preparar el despliegue de la aplicación en un servidor cloud.
+2. Aplicar `EXPLAIN` sobre consultas de KIRO, analizar búsquedas y operaciones `JOIN`, evaluar la selectividad y el orden de columnas en los índices compuestos, justificar los índices existentes, analizar su costo de mantenimiento y los posibles índices adicionales, y documentar las evidencias obtenidas.
+3. Documentar las evidencias de pruebas de la base de datos para la evaluación de Bases de Datos II.
+4. Ampliar la aplicación PHP con operaciones de escritura (CRUD) apoyadas en los procedimientos almacenados, con validación y permisos adecuados.
+5. Implementar autenticación y control de sesiones, apoyado en `INICIO_SESION`.
+6. Desarrollar progresivamente los módulos principales de KIRO.
+7. Realizar pruebas funcionales sistemáticas, validar las operaciones y documentar evidencias.
+8. Preparar el despliegue de la aplicación en un servidor cloud.
 
 > Este documento refleja el estado real de planificación y desarrollo de KIRO. Las funcionalidades descritas como pendientes o previstas no deben interpretarse como implementadas hasta contar con evidencia verificable.
 
 ---
 
 ## 16. Historial de cambios
+
+### 15 de noviembre de 2026
+
+- Implementación de los objetos SQL sobre la base `Kiro`: **4 vistas**, **5 funciones almacenadas**, **2 procedimientos almacenados** (`sp_registrar_cita_segura` con transacción y validación de solapamientos; `sp_resumir_actividades_usuario` con cursor) y **2 triggers** (`trg_validar_actividad` de validación y `trg_auditoria_actividad` de auditoría hacia `HISTORIAL_ACCION`).
+- Exportación de las 13 definiciones verificadas a los scripts reproducibles de `database/objetos/`, con `DELIMITER` y `DROP ... IF EXISTS`; se conserva el `DEFINER` original, por lo que su ejecución requiere cuenta administradora.
+- Creación del rol `rol_kiro_app` (solo `SELECT` sobre `USUARIO`, `PERFIL_KIRO`, `CITA`, `ACTIVIDAD` y `PROYECTO`) y del usuario de aplicación `kiro_app` con el rol asignado y predeterminado; documentación reproducible en `database/objetos/05_permisos.sql`, sin contraseñas en el repositorio.
+- Implementación de la aplicación PHP local de solo lectura: conexión PDO con consultas preparadas reales, páginas Inicio y Configuración, personaje 2D en SVG y panel de chat de demostración sin IA.
+- Exclusión de la configuración real mediante `.gitignore` (`app/config/config.php`) y versionado de la plantilla de ejemplo `config.example.php` con marcadores de posición, sin credenciales.
+- Pruebas básicas de conexión de la aplicación con el usuario de mínimo privilegio verificadas en el entorno local.
 
 ### 11 de noviembre de 2026
 
@@ -640,7 +660,7 @@ El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entida
 | **Institución** | Universidad de Los Andes (Unandes) |
 | **Asignatura** | Bases de Datos II |
 | **Tipo de proyecto** | Individual |
-| **Estado** | Etapa de planificación técnica e inicio de preparación del desarrollo |
+| **Estado** | Núcleo de datos y aplicación de consulta implementados; sin autenticación, CRUD ni IA |
 
 > **Nota de edición:** el nombre del autor se mantiene como marcador editable. Puede actualizarse si la autoría del proyecto cambia.
 
