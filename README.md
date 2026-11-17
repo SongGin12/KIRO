@@ -300,7 +300,7 @@ Las expresiones visuales de KIRO son **elementos de diseño de interacción**. N
 
 ### Contexto
 
-KIRO es un **proyecto individual** para la asignatura **Bases de Datos II** de la **Universidad de Los Andes (Unandes)**. El núcleo de persistencia se implementó localmente en **MariaDB 10.4.32**, incluyendo vistas, funciones almacenadas, procedimientos, triggers y permisos de mínimo privilegio (estado al 15 de noviembre de 2026); el backend en **PHP 8.x con PDO**, también implementado localmente, ofrece una interfaz de consulta de solo lectura.
+KIRO es un **proyecto individual** para la asignatura **Bases de Datos II** de la **Universidad de Los Andes (Unandes)**. El núcleo de persistencia se implementó localmente en **MariaDB 10.4.32**, incluyendo vistas, funciones almacenadas, procedimientos, triggers y permisos de mínimo privilegio, además de transacciones con `SAVEPOINT`, pruebas de concurrencia y niveles de aislamiento, ciclo de `GRANT`/`REVOKE` y respaldo con restauración verificada (estado al 16 de noviembre de 2026, versión académica finalizada para la entrega del proyecto integral); el backend en **PHP 8.x con PDO**, también implementado localmente, ofrece una interfaz de consulta de solo lectura.
 
 El proyecto busca que la organización del compañero digital no sea solo una idea de producto, sino una oportunidad para aplicar de forma coherente los contenidos de la asignatura: modelado, consultas, seguridad, automatización, transacciones y recuperación.
 
@@ -464,6 +464,26 @@ La arquitectura podrá contemplar en el futuro una conexión con hardware físic
 
 ---
 
+### Reproducción del proyecto desde cero
+
+Cualquier persona puede reproducir KIRO localmente siguiendo este orden exacto:
+
+1. **Requisitos:** XAMPP (o equivalente) con **MariaDB 10.4.x** y **PHP 8.x** con la extensión `pdo_mysql`; cliente `mysql.exe` en el PATH o ruta completa (en este proyecto: `C:\xampp\mysql\bin\mysql.exe`).
+2. **Construir el esquema y los datos** (cuenta administradora, por ejemplo `root` local):
+
+   ```bash
+   mysql.exe -u root --default-character-set=utf8mb4 < database/KIRO_MariaDB.sql
+   ```
+
+   Al finalizar existirá la base `Kiro` con sus 12 tablas InnoDB y 120 registros semilla. Nota: `SOURCE` solo funciona en el cliente CLI de `mysql.exe`; no en MySQL Workbench ni en PHP/PDO (en esos entornos, ejecutar cada archivo en el orden indicado).
+3. **Crear los objetos SQL** ejecutando, en orden y con la cuenta administradora, los scripts de `database/objetos/`: `01_vistas.sql`, `02_funciones.sql`, `03_procedimientos.sql`, `04_triggers.sql` y `05_permisos.sql`. Conservan el `DEFINER` original (`root@localhost`), por lo que requieren cuenta administradora; `05_permisos.sql` crea el rol `rol_kiro_app` y el usuario `kiro_app` **sin contraseña** (debe definirse en el entorno local al ejecutarlo).
+4. **Configurar la aplicación:** copiar `app/config/config.example.php` como `app/config/config.php` (ese archivo real nunca se versiona; está en `.gitignore`) y completar `usuario` y `clave` de la base `Kiro`. La plantilla no contiene credenciales.
+5. **Ejecutar la aplicación:** iniciar el servidor PHP integrado apuntando a `public/` (por ejemplo, `php -S 127.0.0.1:8000 -t public` desde la raíz del proyecto) y abrir `http://127.0.0.1:8000`. Las páginas Inicio y Configuración consultan la base con el usuario de mínimo privilegio mediante PDO.
+6. **Consultas de demostración (opcional):** `database/consultas/QUERY_01_construccion.sql` es la guía documentada del orden de construcción; `QUERY_02_consultas.sql` es un recorrido de solo lectura en 14 secciones; `QUERY_03_transacciones.sql` (SAVEPOINT sobre tabla TEMPORARY de sesión), `QUERY_04_seguridad_revoke.sql` (ciclo `GRANT`/`REVOKE` con un rol de laboratorio), `QUERY_05_concurrencia/` y `QUERY_06_subconsultas_exists.sql` (EXISTS/NOT EXISTS, solo lectura) requieren cuenta administradora. `QUERY_05_concurrencia` es un laboratorio en una base dedicada que se crea y elimina en la misma ejecución y **requiere DOS sesiones simultáneas**: los pares de scripts A/B (por ejemplo `01a_lectura_sucia_A.sql` y `01a_lectura_sucia_B.sql`) deben ejecutarse cada uno en su propia conexión, lanzándose en el orden documentado en sus encabezados y en la evidencia 11, para que las lecturas de B caigan mientras la transacción de A sigue abierta. Ninguno de estos laboratorios escribe en las tablas reales de `Kiro`.
+7. **Verificación:** los resultados esperados de cada prueba están archivados en `docs/evidencias/` (evidencias 01 a 11 más su índice), con la base resultante en 122 registros (120 semilla + 2 del laboratorio de objetos).
+
+---
+
 ## 12. Seguridad prevista
 
 Las siguientes medidas combinan criterios ya implementados y criterios previstos; cada una indica su estado.
@@ -556,6 +576,9 @@ Solo si no desplazan el propósito principal, podrían considerarse mejoras como
 
 - Es un proyecto individual con tiempo y recursos acotados.
 - No todas las competencias de Bases de Datos II se implementarán necesariamente.
+- La aplicación web actual es de **solo lectura** y sirve como interfaz e integración con la base de datos; el objetivo principal de esta versión fue el desarrollo y la demostración de los contenidos de Bases de Datos II.
+- El chat del compañero es un panel de demostración (mensajes en `sessionStorage`): **no tiene integración con IA real** ni conexión a la base de datos, y no debe presentarse como funcionalidad implementada.
+- No se declara que las funcionalidades futuras de KIRO estén terminadas: CRUD, autenticación, despliegue cloud y módulos completos siguen previstos.
 - El compañero digital 2D y la interacción por voz pueden requerir prototipos simplificados.
 - La calidad de las sugerencias del compañero dependerá del contexto disponible y de las reglas definidas, no de un modelo entrenado desde cero.
 - La seguridad se diseñará de forma proporcional al alcance académico, no como una auditoría de nivel producción.
@@ -564,15 +587,15 @@ Solo si no desplazan el propósito principal, podrían considerarse mejoras como
 
 ## 15. Estado actual del proyecto
 
-**Estado general:** base de datos completa con sus objetos SQL y permisos de mínimo privilegio, y aplicación PHP local funcional de **solo lectura** (páginas Inicio y Configuración). Sin autenticación, sin operaciones CRUD y sin inteligencia artificial: son parte del alcance posterior.
+**Estado general: versión académica finalizada para la entrega del proyecto integral de Bases de Datos II (apartado VI del sílabo), dentro del alcance implementado y documentado.** La base de datos completa con sus objetos SQL, permisos de mínimo privilegio, pruebas transaccionales, de concurrencia, de seguridad y de respaldo, y una aplicación PHP local funcional de **solo lectura**. El chat es un panel de demostración **sin IA real**; no existe autenticación ni operaciones CRUD: son funcionalidades posteriores fuera del alcance de esta entrega.
 
-El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entidad-relación de 12 entidades. La base `Kiro` (MariaDB 10.4.32) contiene las 12 tablas, sus claves, relaciones e índices, además de 4 vistas, 5 funciones almacenadas, 2 procedimientos almacenados, 2 triggers y un rol de aplicación con permisos de mínimo privilegio. La aplicación PHP local se conecta mediante PDO con consultas preparadas y consulta los datos para sus páginas Inicio y Configuración. El análisis de índices con `EXPLAIN` sigue pendiente de aplicar y documentar sobre `Kiro`.
+El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entidad-relación de 12 entidades. La base `Kiro` (MariaDB 10.4.32) contiene las 12 tablas, sus claves, relaciones e índices, además de 4 vistas, 5 funciones almacenadas, 2 procedimientos almacenados, 2 triggers y un rol de aplicación con permisos de mínimo privilegio. La aplicación PHP local se conecta mediante PDO con consultas preparadas y consulta los datos para sus páginas Inicio y Configuración. El análisis de índices con `EXPLAIN` fue aplicado y documentado sobre consultas representativas de `Kiro` (evidencia 05). El proyecto cuenta además con un paquete de evidencias de pruebas elaborado localmente (evidencias 01 a 11 en `docs/evidencias/`) y con los scripts de consultas `database/consultas/`: `QUERY_01_construccion.sql` (guía orquestada de construcción), `QUERY_02_consultas.sql` (consultas de demostración de solo lectura), `QUERY_03_transacciones.sql` (SAVEPOINT), `QUERY_04_seguridad_revoke.sql` (ciclo `GRANT`/`REVOKE`) y `QUERY_05_concurrencia/` (concurrencia y niveles de aislamiento).
 
 | Elemento | Estado |
 |---|---|
-| Documento conceptual y planificación | Definidos; en actualización |
+| Documento conceptual y planificación | Definidos y actualizados para la entrega académica |
 | Identidad y personalidad de KIRO | Definidas a nivel conceptual |
-| Diseño de la base de datos | Plan técnico documentado; en revisión |
+| Diseño de la base de datos | Plan técnico documentado; implementado y verificado con evidencias |
 | Modelo entidad-relación | Elaborado y actualizado con 12 entidades |
 | Entidades de registro e inicio de sesión | Incorporadas al DER |
 | Tecnologías y arquitectura | Definidas como propuesta tecnológica inicial |
@@ -582,16 +605,22 @@ El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entida
 | Claves primarias | 12 definidas |
 | Claves foráneas | 14 definidas, incluidas las relaciones compuestas |
 | Relaciones e integridad referencial | Verificadas mediante inserciones en el entorno local |
-| Datos de prueba | 120 registros insertados y verificados en el entorno local; la evidencia de servidor (`SHOW TABLE STATUS` y `SELECT COUNT(*)`) aún no está archivada en el repositorio |
+| Datos de prueba | 122 registros actuales: 120 de semilla insertados y verificados en el entorno local, más 2 adicionales de las pruebas de laboratorio de los objetos SQL (1 cita registrada con el procedimiento transaccional y 1 historial generado por el trigger de auditoría); los conteos reales están archivados en la evidencia 01 |
 | Índices del esquema | 19 índices secundarios definidos: 5 `UNIQUE` (3 simples y 2 compuestos) y 14 `KEY` (3 simples y 11 compuestos), además de los 12 índices de clave primaria |
-| Análisis de índices y evidencias con `EXPLAIN` | Parcialmente avanzado: práctica inicial en `db_ecommerce`; pendiente de aplicar y documentar en `Kiro` |
+| Análisis de índices y evidencias con `EXPLAIN` | Aplicado y documentado sobre `Kiro`: `EXPLAIN` de 6 consultas representativas más 1 complementaria, con interpretación del índice utilizado, `key_len` y `Extra` (evidencia 05) |
+| Evidencias de pruebas | Paquete elaborado localmente en `docs/evidencias/` (evidencias 01 a 11 más su índice), obtenido con consultas exclusivamente de lectura y sin credenciales: tablas y conteos (01), catálogo de objetos SQL (02), permisos (03), estructura e integridad (04), análisis `EXPLAIN` (05), consultas SQL avanzadas (06), respaldo y restauración verificada (07), transacciones con `SAVEPOINT` (08), pruebas de las 5 funciones (09), ciclo `GRANT`/`REVOKE` con rol de laboratorio (10) y concurrencia con niveles de aislamiento (11) |
+| Consultas de demostración | 5 scripts en `database/consultas/`: `QUERY_01_construccion.sql` (orquestador documentado del orden de construcción), `QUERY_02_consultas.sql` (recorrido de solo lectura en 14 secciones: JOIN, agregaciones, GROUP BY, HAVING, subconsultas, CASE, UNION, integridad referencial, vistas, funciones y SP de lectura), `QUERY_03_transacciones.sql`, `QUERY_04_seguridad_revoke.sql` y `QUERY_05_concurrencia/` (11 archivos de laboratorio) |
 | Vistas | 4 implementadas: `vw_kiro_proximas_citas`, `vw_kiro_actividades_pendientes`, `vw_kiro_proyectos_activos` y `vw_kiro_notas_categorias` |
 | Funciones almacenadas | 5 implementadas: conteos de actividades pendientes, proyectos activos, notas y recursos, y cálculo de fecha y hora de fin de una cita |
 | Procedimientos almacenados | 2 implementados: `sp_registrar_cita_segura` (validación de datos, control de solapamientos y transacción con `COMMIT`/`ROLLBACK`) y `sp_resumir_actividades_usuario` (recorrido con cursor y resumen por estado) |
 | Triggers | 2 implementados: `trg_validar_actividad` (`BEFORE INSERT` sobre `ACTIVIDAD`) y `trg_auditoria_actividad` (`AFTER UPDATE`, escribe en `HISTORIAL_ACCION`) |
-| Transacciones | Implementadas dentro de `sp_registrar_cita_segura` |
+| Transacciones | Implementadas dentro de `sp_registrar_cita_segura` (transacción de negocio con `COMMIT`/`ROLLBACK` y `EXIT HANDLER`); `SAVEPOINT`, `ROLLBACK TO` y rollback total demostrados en laboratorio aislado (evidencia 08) |
 | Auditoría | Trigger de auditoría implementado; el catálogo de herramientas y la trazabilidad de operaciones del compañero siguen previstos |
 | Roles y permisos | Implementados: rol `rol_kiro_app` con `SELECT` sobre las 5 tablas que consulta la aplicación; usuario `kiro_app` con el rol asignado y predeterminado; scripts reproducibles en `database/objetos/05_permisos.sql` (sin credenciales) |
+| Administración de privilegios | Ciclo completo `GRANT SELECT` → `SHOW GRANTS` → `REVOKE` → `SHOW GRANTS` → `DROP ROLE` demostrado con un rol de laboratorio exclusivo, sin tocar los permisos reales de la aplicación (evidencia 10) |
+| Pruebas de funciones almacenadas | Las 5 funciones probadas contra SQL equivalente (casos con id 1, 11 y 9999; cita 11), 5/5 coincidentes (evidencia 09) |
+| Concurrencia y niveles de aislamiento | 5 experimentos con dos conexiones simultáneas reales: prevención de lectura sucia (REPEATABLE READ), lectura sucia (READ UNCOMMITTED), lectura no repetible (READ COMMITTED) y su prevención (snapshot), y bloqueo de fila con espera real (evidencia 11) |
+| Respaldo y restauración | Respaldo lógico con `mysqldump` y restauración comprobada en base independiente por bytes y fingerprints 12/12, con dos intentos fallidos documentados por codificación (evidencia 07) |
 | Objetos SQL versionados | Definiciones exportadas y verificadas en `database/objetos/` (vistas, funciones, procedimientos, triggers y permisos); por el `DEFINER`, su ejecución requiere cuenta administradora |
 | Interfaz de usuario | Implementada en el entorno local, de solo lectura: páginas Inicio (`public/index.php`) y Configuración (`public/configuracion.php`), con conexión verificada mediante el usuario de mínimo privilegio |
 | Compañero digital 2D | Primera versión implementada: personaje en SVG con estados normal, feliz y pensativa, animado con CSS |
@@ -605,20 +634,31 @@ El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entida
 
 ### Próximos pasos previstos
 
-1. Finalizar la revisión del plan técnico de la base de datos y sus reglas de integridad.
-2. Aplicar `EXPLAIN` sobre consultas de KIRO, analizar búsquedas y operaciones `JOIN`, evaluar la selectividad y el orden de columnas en los índices compuestos, justificar los índices existentes, analizar su costo de mantenimiento y los posibles índices adicionales, y documentar las evidencias obtenidas.
-3. Documentar las evidencias de pruebas de la base de datos para la evaluación de Bases de Datos II.
-4. Ampliar la aplicación PHP con operaciones de escritura (CRUD) apoyadas en los procedimientos almacenados, con validación y permisos adecuados.
-5. Implementar autenticación y control de sesiones, apoyado en `INICIO_SESION`.
-6. Desarrollar progresivamente los módulos principales de KIRO.
-7. Realizar pruebas funcionales sistemáticas, validar las operaciones y documentar evidencias.
-8. Preparar el despliegue de la aplicación en un servidor cloud.
+1. Incorporar al repositorio remoto el material completo del proyecto (evidencias 01 a 11, scripts de consultas `QUERY_01` a `QUERY_05`, y este README y el plan técnico actualizados) mediante el flujo de commits previsto.
+2. Revisar las decisiones pendientes del plan técnico solo si el docente lo solicita después de la entrega (dominios y `CHECK`, eliminación lógica, estrategia de concurrencia RN-07 para la operación real de citas, validación de la referencia polimórfica y mecanismo de registros obligatorios).
+3. Introducción a NoSQL con comparación frente al modelo relacional: **en espera**; no forma parte del alcance de esta entrega.
+4. Ampliar la aplicación PHP con operaciones de escritura (CRUD) apoyadas en los procedimientos almacenados, con validación y permisos adecuados: funcionalidad posterior a la entrega académica.
+5. Implementar autenticación y control de sesiones, apoyado en `INICIO_SESION`: funcionalidad posterior a la entrega académica.
+6. Desarrollar progresivamente los módulos principales de KIRO y realizar pruebas funcionales sistemáticas: desarrollo posterior.
+7. Preparar el despliegue de la aplicación en un servidor cloud: pendiente de configuración, fuera del alcance de esta entrega.
 
 > Este documento refleja el estado real de planificación y desarrollo de KIRO. Las funcionalidades descritas como pendientes o previstas no deben interpretarse como implementadas hasta contar con evidencia verificable.
 
 ---
 
 ## 16. Historial de cambios
+
+### 16 de noviembre de 2026
+
+- Generación del paquete de evidencias de pruebas en `docs/evidencias/` (evidencias **01 a 07** más su índice), todas obtenidas con consultas exclusivamente de lectura y sin credenciales: tablas y conteos reales (01), catálogo de objetos SQL (02), permisos del rol y del usuario de aplicación (03), estructura e integridad (04), análisis `EXPLAIN` de consultas representativas (05), consultas SQL avanzadas con `JOIN`, agregaciones, `GROUP BY`, `HAVING`, subconsultas, `CASE` y `UNION` (06) y respaldo lógico con `mysqldump` con restauración verificada en una base de prueba independiente (07).
+- Incorporación de los scripts de consultas de solo lectura `database/consultas/QUERY_01_construccion.sql` (guía orquestada del orden de construcción) y `QUERY_02_consultas.sql` (recorrido de demostración en 14 secciones).
+- Actualización del plan técnico (`docs/PLAN_BASE_DATOS_KIRO.md`) con la subsección 8.6 "Implementación posterior al plan".
+- Actualización de la sección 15 de este documento para reflejar el análisis `EXPLAIN` aplicado y las evidencias elaboradas localmente (su incorporación al repositorio remoto mediante commit queda pendiente).
+- Demostración de **transacciones con `SAVEPOINT`** en laboratorio aislado: `database/consultas/QUERY_03_transacciones.sql` y evidencia 08 (escenarios de `ROLLBACK TO` con `COMMIT` y rollback total sobre tabla TEMPORARY de sesión, sin tocar las tablas reales).
+- Pruebas de las **5 funciones almacenadas** contra SQL equivalente: evidencia 09 (casos con ids 1, 11 y 9999; resultado 5/5 coincidente, incluida la documentación fiel de la inconsistencia del comentario de `fn_total_actividades_pendientes`).
+- Demostración del ciclo de **administración de privilegios** (`GRANT SELECT` → `SHOW GRANTS` → `REVOKE` → `DROP ROLE`): `database/consultas/QUERY_04_seguridad_revoke.sql` y evidencia 10, con un rol de laboratorio exclusivo y los permisos reales de la aplicación intactos.
+- Demostración de **concurrencia, bloqueos y niveles de aislamiento**: `database/consultas/QUERY_05_concurrencia/` (11 scripts) y evidencia 11, con dos conexiones simultáneas reales, cronología verificada con `NOW(6)` y una base de laboratorio creada y eliminada en la misma ejecución.
+- **Cierre documental para la entrega académica:** actualización de este README (secciones 8, 11, 15, 16 y 17) y del plan técnico (`docs/PLAN_BASE_DATOS_KIRO.md`) para presentar KIRO como versión académica finalizada dentro del alcance implementado, con sus limitaciones declaradas, los contenidos pendientes señalados como tales y las instrucciones de reproducción desde cero.
 
 ### 15 de noviembre de 2026
 
@@ -660,7 +700,7 @@ El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entida
 | **Institución** | Universidad de Los Andes (Unandes) |
 | **Asignatura** | Bases de Datos II |
 | **Tipo de proyecto** | Individual |
-| **Estado** | Núcleo de datos y aplicación de consulta implementados; sin autenticación, CRUD ni IA |
+| **Estado** | Versión académica finalizada para la entrega del proyecto integral de Bases de Datos II; sin autenticación, CRUD, IA ni despliegue cloud (funcionalidades posteriores) |
 
 > **Nota de edición:** el nombre del autor se mantiene como marcador editable. Puede actualizarse si la autoría del proyecto cambia.
 

@@ -10,7 +10,7 @@ USE Kiro;
 
 
 -- -------------------------------------------------------------------
--- fn_total_actividades_pendientes: Total de actividades pendientes o en progreso de un usuario.
+-- fn_total_actividades_pendientes: Total de actividades con estado 'Pendiente' de un usuario.
 -- -------------------------------------------------------------------
 DELIMITER $$
 

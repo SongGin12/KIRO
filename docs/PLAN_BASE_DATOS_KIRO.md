@@ -5,7 +5,7 @@
 **Institución:** Universidad de Los Andes (Unandes)  
 **Documento:** Plan técnico de la base de datos en MariaDB 10.4.32  
 **Fecha:** 11 de noviembre de 2026  
-**Estado:** Plan técnico en revisión; implementación inicial de la base de datos realizada en MariaDB 10.4.32
+**Estado:** Plan técnico cerrado para la entrega académica. Implementación realizada en MariaDB 10.4.32: esquema (12 tablas), 13 objetos SQL (4 vistas, 5 funciones, 2 procedimientos, 2 triggers), rol y usuario de aplicación de solo lectura, aplicación PHP conectada y evidencias de pruebas 01 a 11. Las decisiones pendientes de la sección 7 siguen abiertas. Ver sección 8.6.
 
 **Fuentes de referencia:**
 
@@ -53,7 +53,7 @@ No incluye:
 
 - La creación de tablas como parte de este documento; esa creación ya se ejecutó mediante `database/KIRO_MariaDB.sql`.
 - El script SQL canónico dentro del plan; vive en `database/KIRO_MariaDB.sql`.
-- Vistas, procedimientos, funciones o triggers implementados.
+- La definición de los 13 objetos SQL (vistas, procedimientos, funciones y triggers) ya implementados después de este plan; su reprodución vive en `database/objetos/` y su estado se describe en la sección 8.6.
 - Modificación del DER.
 - Cambios en el README u otros documentos.
 - Cambios en Git.
@@ -72,15 +72,15 @@ No incluye:
 
 ### 2.1. Hechos del repositorio
 
-- El repositorio contiene `README.md`, `docs/diagrama-er-kiro.png`, este documento, el script canónico `database/KIRO_MariaDB.sql` y el borrador anterior `database/kiro_schema_draft.sql`.
-- No existen todavía carpetas de aplicación, código PHP ni frontend. El único script de base de datos vigente es `database/KIRO_MariaDB.sql`; el borrador no está autorizado para ejecutarse.
+- El repositorio contiene `README.md`, `docs/diagrama-er-kiro.png`, este documento, el script canónico `database/KIRO_MariaDB.sql`, la carpeta `database/objetos/` (reproducción de los 13 objetos SQL y de los permisos), la carpeta `database/consultas/` (cinco scripts: `QUERY_01_construccion.sql`, `QUERY_02_consultas.sql`, `QUERY_03_transacciones.sql`, `QUERY_04_seguridad_revoke.sql` y `QUERY_05_concurrencia/` con 11 archivos de laboratorio) y el paquete de evidencias `docs/evidencias/` (evidencias 01 a 11 más su índice). El borrador anterior `database/kiro_schema_draft.sql` fue archivado fuera del repositorio (carpeta personal `Respaldo_KIRO`) y ya no forma parte del proyecto.
+- Existen carpetas de aplicación (`app/`, `public/`, `storage/`) con código PHP 8.x y PDO; la aplicación está conectada a la base `Kiro` mediante el usuario `kiro_app@127.0.0.1` con el rol `rol_kiro_app` de solo lectura. El único script de esquema vigente es `database/KIRO_MariaDB.sql`; el borrador nunca estuvo autorizado para ejecutarse.
 - El README define KIRO como una aplicación web.
 - El stack previsto es HTML5, CSS3, JavaScript, Bootstrap 5 y SVG en el frontend; PHP 8.x y PDO en el backend.
 - **Entorno de base de datos confirmado:** MariaDB 10.4.32 con motor InnoDB. El servidor se administra desde MySQL Workbench, que actúa como cliente.
 - La versión publicada se alojará en una infraestructura externa compatible con PHP y MariaDB; el proveedor no está definido.
 - El desarrollo y las pruebas iniciales pueden realizarse en un entorno local.
-- La base `Kiro` fue creada en MariaDB 10.4.32 con las 12 tablas, 12 claves primarias, 14 claves foráneas, 19 índices secundarios y 120 registros de prueba (10 por tabla).
-- El análisis de índices con `EXPLAIN` sobre `Kiro` sigue pendiente; la práctica realizada en `db_ecommerce` es independiente.
+- La base `Kiro` fue creada en MariaDB 10.4.32 con las 12 tablas, 12 claves primarias, 14 claves foráneas y 19 índices secundarios. Contiene **122 registros actuales**: los 120 registros semilla de prueba (10 por tabla) más 2 registros adicionales del laboratorio de pruebas (1 cita creada por el procedimiento `sp_registrar_cita_segura` y 1 acción de auditoría registrada por el trigger `trg_auditoria_actividad`). Ver evidencia 01.
+- El análisis de índices con `EXPLAIN` sobre `Kiro` se ejecutó y está registrado en la evidencia 05 (6 consultas representativas más 1 complementaria): ninguna consulta cayó en escaneo completo (`type = ALL`) y `key_len` confirmó el uso de índices compuestos. La práctica realizada en `db_ecommerce` es independiente. Ver sección 12.6.
 - La implementación local se realizó sobre MariaDB 10.4.32 con InnoDB; la versión debe confirmarse en cualquier entorno nuevo (ver sección 8.1.1).
 - El compañero digital 2D es la primera versión prevista; el 3D es una ampliación futura.
 - El DER está elaborado con **12 entidades**.
@@ -532,7 +532,7 @@ No se establecen valores `DEFAULT` nuevos para `PERFIL_KIRO.memoria_activa`, `RE
 
 ### 8.5. Estado de las decisiones y de los scripts SQL
 
-> El script canónico es `database/KIRO_MariaDB.sql`, ejecutado en MariaDB 10.4.32. El archivo `database/kiro_schema_draft.sql` es un borrador anterior, no vigente y no autorizado para ejecutarse. Esta tabla distingue lo incorporado al diseño, lo implementado, lo pendiente y lo definido solo para el entorno local.
+> El script canónico es `database/KIRO_MariaDB.sql`, ejecutado en MariaDB 10.4.32. El archivo `database/kiro_schema_draft.sql` era un borrador anterior, no vigente y no autorizado para ejecutarse; fue archivado fuera del repositorio en una carpeta personal de respaldo y ya no forma parte del proyecto. Esta tabla distingue lo incorporado al diseño, lo implementado, lo pendiente y lo definido solo para el entorno local.
 
 | Aspecto | Estado | Alcance |
 |---|---|---|
@@ -542,11 +542,13 @@ No se establecen valores `DEFAULT` nuevos para `PERFIL_KIRO.memoria_activa`, `RE
 | Charset `utf8mb4` y collation `utf8mb4_unicode_ci` | **Decisión incorporada** | Sección 8.1.2 |
 | `AUTO_INCREMENT` en las PK numéricas | **Decisión incorporada** | Sección 8.1 |
 | Script canónico `database/KIRO_MariaDB.sql` | **Vigente** | Implementación ejecutada en MariaDB 10.4.32 |
-| Borrador `database/kiro_schema_draft.sql` | **No vigente** | Reemplazado por el script canónico |
+| Borrador `database/kiro_schema_draft.sql` | **No vigente; archivado fuera del repositorio** | Reemplazado por el script canónico; retirado del proyecto para evitar ejecuciones equivocadas |
 | Nombre `Kiro` de la base de datos | **Definido en la implementación local** | Base creada; pendiente confirmar el nombre para entornos futuros (secciones 8.1.1 y 14) |
-| 12 tablas, 12 PK, 14 FK y 120 registros de prueba | **Implementado** | Script canónico; 10 registros por tabla |
+| 12 tablas, 12 PK y 14 FK | **Implementado** | Script canónico |
+| Datos de prueba: 120 registros semilla (10 por tabla) | **Implementado** | Script canónico; 12 bloques `INSERT` |
+| 2 registros adicionales del laboratorio (1 cita del SP, 1 auditoría del trigger) | **Implementado y verificado** | Evidencia 01; total actual: 122 registros |
 | 19 índices secundarios (5 `UNIQUE` y 14 `KEY`) | **Implementado** | Sección 10 |
-| Análisis de índices con `EXPLAIN` | **Pendiente** | Sección 12.6; la práctica en `db_ecommerce` es independiente |
+| Análisis de índices con `EXPLAIN` | **Realizado y registrado** | Evidencia 05 (6 consultas + Q2b); sin `type = ALL`; índices candidatos de la sección 10.3 siguen sin implementar ni validar para su inclusión |
 | Dominios y `CHECK` de estados, prioridades, tipos, actor, resultado y tipo de acción | **Pendiente** | Sección 7.2 |
 | Valores `DEFAULT` | **Pendiente** | Sección 8.4 |
 | Eliminación lógica | **Pendiente** | Sección 7.1 |
@@ -559,6 +561,31 @@ No se establecen valores `DEFAULT` nuevos para `PERFIL_KIRO.memoria_activa`, `RE
 | Índices candidatos de la sección 10.3 | **Pendiente** | Sección 10.3 |
 
 > Ninguna decisión pendiente queda aprobada por aparecer en el script o por estar documentada como `TODO`. La revisión técnica del plan sigue abierta.
+
+### 8.6. Implementación posterior al plan
+
+> Estado real verificado al 16 de noviembre de 2026, tras la aprobación de este plan. Esta subsección documenta lo implementado después del esquema base; no cierra ninguna decisión pendiente de la sección 7.
+
+**Objetos SQL (13):** 4 vistas, 5 funciones almacenadas, 2 procedimientos almacenados y 2 triggers, verificados contra `SHOW CREATE` con coincidencia 13/13.
+
+- Vistas: `vw_kiro_proximas_citas`, `vw_kiro_actividades_pendientes`, `vw_kiro_proyectos_activos`, `vw_kiro_notas_categorias`.
+- Funciones: `fn_total_actividades_pendientes`, `fn_total_proyectos_activos`, `fn_total_notas_usuario`, `fn_total_recursos_usuario`, `fn_calcular_fecha_fin_cita`.
+- Procedimientos: `sp_registrar_cita_segura` (alta segura de cita con validación, control de solapamientos y transacción `COMMIT`/`ROLLBACK`), `sp_resumir_actividades_usuario` (recorrido con cursor y resumen por estado).
+- Triggers: `trg_validar_actividad` (`BEFORE INSERT` sobre `ACTIVIDAD`), `trg_auditoria_actividad` (`AFTER UPDATE` sobre `ACTIVIDAD`, registra en `HISTORIAL_ACCION`).
+
+**Reproducción de los objetos:** `database/objetos/` contiene 5 scripts numerados (`01_vistas.sql` a `05_permisos.sql`) fieles a las definiciones del servidor; deben ejecutarse con cuenta administradora por el `DEFINER`. `05_permisos.sql` documenta los permisos sin credenciales (la contraseña del usuario queda como marcador para elegir en el entorno de ejecución).
+
+**Rol y usuario de aplicación:** rol `rol_kiro_app` con `GRANT SELECT` únicamente sobre las 5 tablas que consulta la aplicación (`usuario`, `perfil_kiro`, `cita`, `actividad`, `proyecto`); usuario `kiro_app@127.0.0.1` con el rol asignado y establecido como predeterminado. Sin permisos de escritura ni `EXECUTE`. Ver evidencia 03.
+
+**Aplicación PHP conectada:** carpetas `app/`, `public/` y `storage/`; conexión PDO con el usuario de aplicación; 7 consultas `SELECT` preparadas; la etapa actual de la aplicación es de solo lectura. El archivo local de configuración queda excluido del repositorio mediante `.gitignore`.
+
+**Evidencias registradas:** `docs/evidencias/` contiene el paquete de evidencias 01 a 11 más su índice `README.md`, todas obtenidas con consultas de solo lectura y sin credenciales: tablas y conteos reales (01), catálogo de objetos SQL (02), permisos del rol y del usuario de aplicación (03), estructura e integridad con PK, FK e índices (04), análisis `EXPLAIN` de consultas representativas (05), consultas SQL avanzadas con `JOIN`, agregaciones, `GROUP BY`, `HAVING`, subconsultas, `CASE` y `UNION` (06), respaldo lógico completo con `mysqldump` y restauración verificada en una base de prueba independiente (07, con dos intentos fallidos documentados por problemas de codificación y una restauración correcta comprobada por bytes y fingerprints de contenido, dejando intacta la base original), transacciones con `SAVEPOINT`/`ROLLBACK TO`/`COMMIT` y rollback total en laboratorio aislado (08), pruebas de las 5 funciones almacenadas contra SQL equivalente (09), ciclo completo de administración de privilegios `GRANT`→`SHOW GRANTS`→`REVOKE`→`DROP ROLE` con un rol de laboratorio exclusivo (10) y concurrencia, bloqueos y niveles de aislamiento con dos conexiones simultáneas reales y cronología verificada con `NOW(6)` (11). Las evidencias están elaboradas localmente; su incorporación al repositorio remoto queda pendiente del flujo de commits del proyecto.
+
+**Scripts de consultas:** `database/consultas/` incorpora cinco entradas reproducibles. `QUERY_01_construccion.sql` es la guía orquestada del orden de construcción: no contiene el DDL ni los datos, delega la única fuente de verdad en `KIRO_MariaDB.sql` y en `database/objetos/`, y documenta los prerequisitos de ejecución (cuenta administradora y limitaciones del comando `SOURCE`). `QUERY_02_consultas.sql` es un recorrido de demostración en 14 secciones: consultas básicas por clave primaria, filtros y ordenamiento, `INNER JOIN`, `LEFT JOIN`, agregaciones, `GROUP BY`, `HAVING`, subconsultas, `CASE`, `UNION`, comprobación de integridad referencial, vistas, funciones y un `CALL` del procedimiento de solo lectura comentado por defecto; no modifica datos. `QUERY_03_transacciones.sql` demuestra `START TRANSACTION`, `SAVEPOINT`, `ROLLBACK TO` y `ROLLBACK` exclusivamente sobre una tabla TEMPORARY de la sesión (laboratorio aislado, sin tocar tablas reales). `QUERY_04_seguridad_revoke.sql` demuestra el ciclo `GRANT SELECT` → `SHOW GRANTS` → `REVOKE` → `SHOW GRANTS` → `DROP ROLE` con el rol de laboratorio `rol_labo_revoke`, sin modificar los permisos reales de la aplicación ni crear usuarios. `QUERY_05_concurrencia/` contiene 11 scripts que demuestran prevención de lectura sucia, lectura sucia, lecturas no repetibles y su prevención, y bloqueo de fila, con dos conexiones simultáneas sobre la base dedicada `kiro_labo_concurrencia`, creada y eliminada en la misma ejecución.
+
+**Lo que sigue pendiente:** las decisiones de la sección 7 (dominios y `CHECK`, eliminación lógica, estrategia de concurrencia RN-07, validación de la referencia polimórfica, mecanismo de registros obligatorios), los valores `DEFAULT` de la sección 8.4 y la unicidad de `CATEGORIA` de la sección 9.3. La aplicación de escritura (INSERT/UPDATE/DELETE desde PHP) no está implementada; los 2 registros adicionales sobre los 120 semilla provienen de las pruebas de laboratorio de los objetos SQL.
+
+**Estado final para la entrega académica (16 de noviembre de 2026):** KIRO se declara **versión académica finalizada** para el proyecto integral de Bases de Datos II (apartado VI del sílabo), dentro del alcance implementado y documentado. Esta declaración cubre la implementación realizada (esquema canónico, 13 objetos SQL, permisos de mínimo privilegio, aplicación PHP/PDO de solo lectura), la evidencia obtenida (evidencias 01 a 11, con pruebas ejecutadas y resultados archivados) y las instrucciones de reproducción del README. No cubre: las decisiones pendientes de la sección 7 (que permanecen abiertas y documentadas), la introducción a NoSQL (en espera por decisión académica), ni funcionalidades posteriores (CRUD, autenticación, despliegue cloud, 3D), que se listan como trabajos futuros y no deben interpretarse como implementadas.
 
 ---
 
@@ -796,6 +823,8 @@ Estos índices **no se consideran necesarios ni aprobados**. Su utilidad depende
 
 ## 12. Plan de pruebas y validación
 
+> **Estado de esta sección:** la mayor parte de las pruebas previstas en esta sección fue ejecutada posteriormente a la aprobación del plan y está archivada con resultados reales en `docs/evidencias/` (evidencias 01 a 11): validación estructural e integridad (01, 04), transacciones y auditoría del SP y del trigger (01, 02, 08, 09), rendimiento con `EXPLAIN` (05), consultas avanzadas (06), recuperación y respaldo (07), administración de privilegios (10) y concurrencia (11). Los ítems marcados como pendientes en esta sección y en la sección 14 siguen abiertos y no se declaran ejecutados.
+
 ### 12.1. Validación estructural
 
 - Confirmar la existencia de las 12 tablas.
@@ -870,7 +899,7 @@ Estos índices **no se consideran necesarios ni aprobados**. Su utilidad depende
 
 > Los `EXPLAIN` se ejecutan sobre MariaDB 10.4.32. Ningún índice garantiza por sí solo un plan de ejecución: debe comprobarse la utilización real del índice, el tipo de acceso y la ausencia de escaneos completos u ordenamientos innecesarios.
 
-**Estado:** las comprobaciones con `EXPLAIN` siguen pendientes en `Kiro`. La práctica realizada en `db_ecommerce` es independiente y no constituye evidencia de rendimiento para esta base de datos.
+**Estado:** las comprobaciones con `EXPLAIN` sobre `Kiro` se ejecutaron el 16 de noviembre de 2026 y están registradas en la evidencia 05 (`docs/evidencias/05_analisis_explain.md`): 6 consultas representativas más 1 complementaria (Q2b). Resultado observado: ninguna consulta cayó en escaneo completo (`type = ALL`); `key_len` confirmó el uso efectivo de las columnas de los índices compuestos (Q3 = 9, Q5 = 90 con las 3 columnas, Q6 = 207). En Q4 y Q6 se observó `Using filesort` por el `ORDER BY` no cubierto por el índice, sin medición de costo. La práctica realizada en `db_ecommerce` es independiente y no constituye evidencia de rendimiento para esta base de datos. Los índices candidatos de la sección 10.3 siguen sin implementarse ni validarse para su inclusión.
 
 **Consultas con índice identificado (N-C o Compartido):**
 
@@ -960,10 +989,10 @@ Estos índices **no se consideran necesarios ni aprobados**. Su utilidad depende
 - [x] Confirmar charset `utf8mb4` y collation `utf8mb4_unicode_ci`.
 - [ ] Confirmar el nombre de la base para entornos futuros; la implementación local usa `Kiro`.
 - [x] Confirmar en el script canónico `database/KIRO_MariaDB.sql` los 19 índices secundarios (5 `UNIQUE`: 3 simples y 2 compuestos; 14 `KEY`: 3 simples y 11 compuestos) y los 12 índices de clave primaria. *Evidencia estática del DDL; no sustituye la comprobación con `SHOW INDEX`.*
-- [ ] Comprobar con `SHOW INDEX` en la base `Kiro` esos 19 índices secundarios y los 12 de clave primaria, y con `SHOW TABLE STATUS` el motor InnoDB. *Verificación en servidor pendiente de evidencia registrada.*
+- [x] Comprobar con `SHOW INDEX` en la base `Kiro` esos 19 índices secundarios y los 12 de clave primaria, y con `SHOW TABLE STATUS` el motor InnoDB. *Verificado: evidencia 04 (12 PK, 14 FK y 19 índices desde `information_schema`) y evidencia 01 (12 tablas InnoDB). Pendiente: revisión de índices redundantes tras pruebas con mayor volumen.*
 - [ ] Decidir cuáles de los índices candidatos de la sección 10.3 se validan con `EXPLAIN` e implementan.
 - [x] Confirmar en el script canónico que las 12 tablas declaran `ENGINE=InnoDB`. *Evidencia estática de las cláusulas `ENGINE`; la versión del servidor no puede comprobarse en el archivo.*
-- [ ] Verificar en el servidor, con `SELECT VERSION()`, que la versión es MariaDB 10.4.32. *Pendiente de evidencia registrada.*
+- [x] Verificar en el servidor, con `SELECT VERSION()`, que la versión es MariaDB 10.4.32. *Verificado y registrado: evidencia 01 (informe incluye la versión del servidor).*
 - [ ] Definir la política de eliminación lógica y definitiva (RN-09) y su atributo.
 - [ ] Definir los dominios de estados, prioridades, tipos, actor, resultado y tipo de acción, y decidir sus `CHECK`.
 - [ ] Confirmar la semántica de `PERFIL_KIRO.memoria_activa`, `RECUERDO.autorizado` y `RECUERDO.estado`.
@@ -975,7 +1004,7 @@ Estos índices **no se consideran necesarios ni aprobados**. Su utilidad depende
 - [ ] Definir la zona horaria de la aplicación y del servidor.
 - [x] Confirmar en el script canónico la definición de las 12 tablas, sus 12 claves primarias, 14 claves foráneas y 19 índices secundarios. *Evidencia estática del DDL.*
 - [x] Confirmar en el script canónico las 120 tuplas de datos de prueba, 10 por tabla (12 bloques `INSERT`). *Evidencia estática.*
-- [ ] Verificar en el servidor la creación de las 12 tablas con `SHOW TABLE STATUS` y la carga de 120 registros con `SELECT COUNT(*)` por tabla. *Pendiente de evidencia registrada.*
+- [x] Verificar en el servidor la creación de las 12 tablas y la carga de registros con `SELECT COUNT(*)` por tabla. *Verificado: evidencia 01 — 122 registros actuales = 120 semilla (10 por tabla) + 2 adicionales del laboratorio (1 cita del SP y 1 auditoría del trigger).*
 - [ ] Aprobar la revisión técnica completa de este plan.
 
-> **Fin del plan.** Las 12 tablas, sus restricciones, los 19 índices secundarios y los datos de prueba ya se implementaron en la base `Kiro` mediante `database/KIRO_MariaDB.sql`. Las vistas, los procedimientos, las funciones, los triggers, las transacciones y los mecanismos de auditoría se implementarán en una etapa posterior, después de revisar y aprobar este documento.
+> **Fin del plan.** Las 12 tablas, sus restricciones, los 19 índices secundarios y los datos de prueba (120 registros semilla) se implementaron en la base `Kiro` mediante `database/KIRO_MariaDB.sql`. Tras la aprobación de este plan se implementaron además los 13 objetos SQL (4 vistas, 5 funciones, 2 procedimientos, 2 triggers), el rol `rol_kiro_app` y el usuario `kiro_app@127.0.0.1` de solo lectura, y la aplicación PHP conectada (sección 8.6); el análisis `EXPLAIN` está registrado en la evidencia 05. Los pendientes de la sección 7 (dominios, eliminación lógica, concurrencia RN-07, validación polimórfica, mecanismos de registros obligatorios) siguen abiertos y no se declaran implementados. Con fecha 16 de noviembre de 2026 el proyecto alcanzó la **versión académica finalizada** para la entrega del proyecto integral de Bases de Datos II: las evidencias 01 a 11 archivan las pruebas ejecutadas (incluidas transacciones con `SAVEPOINT`, pruebas de funciones, ciclo `GRANT`/`REVOKE`, concurrencia y aislamiento, y respaldo con restauración verificada) y el README documenta la reproducción completa del proyecto desde cero. La introducción a NoSQL queda **en espera**, fuera del alcance de esta entrega.
