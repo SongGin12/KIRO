@@ -6,6 +6,15 @@
 app/config/config.php
 .env
 
+# Secretos locales: claves de cuentas tecnicas, herramientas y pruebas
+storage/secretos/
+
+# Evidencias con datos: exportaciones, capturas y manifiestos completos
+storage/evidencias/
+docs/evidencias/**/datos_privados/
+docs/evidencias/**/capturas/
+*.csv
+
 # Registros y archivos temporales
 storage/logs/*
 !storage/logs/.gitkeep

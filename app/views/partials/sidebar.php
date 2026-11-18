@@ -44,18 +44,19 @@ $menu = [
       <?php endif; ?>
     <?php endforeach; ?>
 
-    <span class="menu-item is-inactivo" aria-disabled="true"
-          title="Requiere el sistema de autenticación (Etapa 2)">
-      <?= icono('salir') ?>
-      <span>Cerrar sesión</span>
-      <em class="menu-badge">etapa 2</em>
-    </span>
+    <form method="post" action="logout.php" class="menu-salir">
+      <input type="hidden" name="csrf" value="<?= e(Sesion::csrf()) ?>">
+      <button type="submit" class="menu-item menu-item--salir" title="Cerrar la sesión actual">
+        <?= icono('salir') ?>
+        <span>Cerrar sesión</span>
+      </button>
+    </form>
   </nav>
 
   <div class="barra-pie">
     <p class="barra-nota">
-      Etapa 1<br>
-      <strong>Estructura y datos reales</strong>
+      Etapa 2<br>
+      <strong>Acceso y datos privados</strong>
     </p>
   </div>
 </aside>

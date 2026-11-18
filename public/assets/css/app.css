@@ -1565,3 +1565,33 @@ a.menu-item:hover {
     transition-duration: .001ms !important;
   }
 }
+
+/* ------------------- Menu lateral: cerrar sesion ------------------ */
+/* El boton debe verse igual que los enlaces del menu, pero es un
+   formulario POST (cerrar sesion no debe ocurrir por GET). */
+.menu-salir {
+  margin: 0;
+  padding: 0;
+}
+
+button.menu-item--salir {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--tinta-3);
+  text-align: left;
+  cursor: pointer;
+}
+
+button.menu-item--salir:hover {
+  background: #FFF3F1;
+  color: #8A3A2C;
+  transform: translateX(2px);
+}
+
+button.menu-item--salir:hover .icono {
+  color: #8A3A2C;
+}

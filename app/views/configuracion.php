@@ -40,15 +40,21 @@ $perfil  = $datos['perfil'] ?? null;
         <span class="estado estado--listo">aplicada</span>
       </li>
       <li>
-        <span class="lista-estado-clave">Usuario de vista previa</span>
+        <span class="lista-estado-clave">Cuenta en sesión</span>
         <span class="lista-estado-valor">
           <?php if ($usuario !== null): ?>
             #<?= (int) $usuario['id_usuario'] ?> &middot; <?= e($usuario['nombre']) ?>
+            <br><span class="lista-estado-extra"><?= e($usuario['correo']) ?></span>
           <?php else: ?>
-            no encontrado
+            no encontrada
           <?php endif; ?>
         </span>
-        <span class="estado estado--pendiente">temporal</span>
+        <span class="estado estado--listo">autenticada</span>
+      </li>
+      <li>
+        <span class="lista-estado-clave">Sesión</span>
+        <span class="lista-estado-valor">Cookie HttpOnly &middot; SameSite=Lax &middot; CSRF</span>
+        <span class="estado estado--listo">protegida</span>
       </li>
       <li>
         <span class="lista-estado-clave">Tema visual</span>
@@ -58,9 +64,9 @@ $perfil  = $datos['perfil'] ?? null;
     </ul>
 
     <p class="bloque-nota">
-      El usuario de vista previa se define en <code>app/config/config.php</code>
-      con la clave <code>usuario_vista</code>. Desaparecerá cuando exista el
-      inicio de sesión. No hay contraseñas almacenadas en la aplicación.
+      La cuenta se identifica con <code>$_SESSION['id_usuario']</code>; ya no
+      existe un usuario de vista previa en la configuración. Cada consulta
+      filtra por ese id, así que una sesión solo ve sus propios datos.
     </p>
   </section>
 
@@ -107,11 +113,12 @@ $perfil  = $datos['perfil'] ?? null;
   <section class="bloque" aria-labelledby="pendiente-titulo">
     <h2 id="pendiente-titulo">Pendiente para las siguientes etapas</h2>
     <ul class="lista-pendientes">
-      <li>Autenticación, sesiones y cierre de sesión.</li>
+      <li>Panel administrativo web para emitir códigos de activación.</li>
+      <li>Recuperación de contraseña por correo electrónico.</li>
       <li>Edición del perfil y preferencias del tema visual.</li>
       <li>Vistas Agenda, Notas y KIRO con sus formularios.</li>
       <li>Conexión real del chat (hoy es solo interfaz local).</li>
-      <li>Auditoría en <code>HISTORIAL_ACCION</code> para cada operación.</li>
+      <li>CRUD de datos privados con borrado lógico y disparadores de protección.</li>
     </ul>
   </section>
 

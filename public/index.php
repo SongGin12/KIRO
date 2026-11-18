@@ -3,30 +3,30 @@
  * KIRO - Pagina Inicio
  * ---------------------------------------------------------------
  * Flujo de la peticion:
- *   1. bootstrap.php  -> configuracion, zona horaria, errores, clases
- *   2. Database       -> conexion PDO (una sola por peticion)
- *   3. Repositorio    -> consultas preparadas con id_usuario
- *   4. Vista inicio.php -> solo HTML con los datos ya preparados
- *   5. layout.php     -> estructura comun (menu, encabezado, pie)
+ *   1. bootstrap.php  -> configuracion, zona horaria, sesion, clases
+ *   2. exigirLogin    -> sin sesion no se consulta ningun dato
+ *   3. Database       -> conexion PDO con la cuenta kiro_app
+ *   4. Repositorio    -> consultas preparadas con $_SESSION['id_usuario']
+ *   5. Vista inicio.php -> solo HTML con los datos ya preparados
  *
- * La vista no contiene SQL: todo el acceso a datos esta en
- * app/src/RepositorioInicio.php.
+ * La vista no contiene SQL.
  */
 
 declare(strict_types=1);
 
 $config = require dirname(__DIR__) . '/app/bootstrap.php';
 
+Sesion::exigirLogin();
+$idUsuario = (int) Sesion::usuarioId();
+
 $titulo       = 'Inicio';
 $paginaActiva = 'inicio';
-$idUsuario    = (int) $config['app']['usuario_vista'];
 
 try {
-    $pdo   = Database::conectar($config['db']);
+    $pdo   = Database::conectar($config['db'], 'app');
     $repo  = new RepositorioInicio($pdo);
     $datos = $repo->panelInicio($idUsuario);
 } catch (Throwable $e) {
-    // El detalle ya quedo en storage/logs/error.log.
     $mensaje = $e instanceof RuntimeException
         ? $e->getMessage()
         : 'No se pudieron cargar los datos de Inicio.';
@@ -34,19 +34,15 @@ try {
     exit;
 }
 
-// El saludo usa el nombre real de la tabla USUARIO. Si el id configurado
-// no existe, se avisa y no se inventa ningun nombre.
+// Si la cuenta desaparecio, la sesion ya no es valida.
 if (($datos['usuario'] ?? null) === null) {
-    $mensaje = 'No se encontro el usuario de vista previa #' . $idUsuario
-        . ' en la tabla USUARIO. Revisa la clave usuario_vista en app/config/config.php.';
-    require KIRO_APP . '/views/error.php';
+    Sesion::cerrar();
+    header('Location: login.php', true, 303);
     exit;
 }
 
-// 4. Se genera el contenido de la vista y despues se envuelve en el layout.
 ob_start();
 require KIRO_APP . '/views/inicio.php';
 $contenido = ob_get_clean();
 
-// 5. Estructura comun
 require KIRO_APP . '/views/layout.php';

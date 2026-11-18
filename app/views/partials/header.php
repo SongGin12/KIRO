@@ -20,8 +20,9 @@ $ahora = new DateTimeImmutable('now');
   </div>
 
   <div class="encabezado-acciones">
-    <span class="chip chip--aviso" title="No hay autenticación todavía">
-      Vista previa &middot; sin sesión
+    <span class="chip chip--aviso" title="Sesión iniciada con tu cuenta">
+      <span class="chip-punto" aria-hidden="true"></span>
+      Sesión activa
     </span>
     <span class="chip chip--tema" title="Tema visual activo">
       <span class="chip-punto" aria-hidden="true"></span>

@@ -27,6 +27,7 @@
 - [15. Estado actual del proyecto](#15-estado-actual-del-proyecto)
 - [16. Historial de cambios](#16-historial-de-cambios)
 - [17. Autoría](#17-autoría)
+- [18. Evolución posterior a la entrega: chat (14 entidades)](#18-evolución-posterior-a-la-entrega-chat-14-entidades)
 
 ---
 
@@ -342,6 +343,8 @@ KIRO cuenta con un **modelo entidad-relación elaborado** que sirve como referen
 
 El modelo conceptual está elaborado y **su implementación inicial en MariaDB 10.4.32 ya fue realizada**. La base `Kiro` contiene las 12 tablas, sus relaciones y restricciones; el script canónico es `database/KIRO_MariaDB.sql`.
 
+> **Nota de evolución (17 de noviembre de 2026):** después de la entrega académica, el modelo se amplió de **12 a 14 entidades** con `CONVERSACION` y `MENSAJE` para el chat real del compañero. El DER de 12 entidades (`docs/diagrama-er-kiro.png`) y el script canónico permanecen **intactos** como registro fiel de la entrega; la evolución se documenta en la [sección 18](#18-evolución-posterior-a-la-entrega-chat-14-entidades) y en la figura 2 (`docs/diagrama-er-kiro-14.png`).
+
 ### Entidades incorporadas
 
 #### REGISTRO_USUARIO
@@ -476,11 +479,24 @@ Cualquier persona puede reproducir KIRO localmente siguiendo este orden exacto:
    ```
 
    Al finalizar existirá la base `Kiro` con sus 12 tablas InnoDB y 120 registros semilla. Nota: `SOURCE` solo funciona en el cliente CLI de `mysql.exe`; no en MySQL Workbench ni en PHP/PDO (en esos entornos, ejecutar cada archivo en el orden indicado).
-3. **Crear los objetos SQL** ejecutando, en orden y con la cuenta administradora, los scripts de `database/objetos/`: `01_vistas.sql`, `02_funciones.sql`, `03_procedimientos.sql`, `04_triggers.sql` y `05_permisos.sql`. Conservan el `DEFINER` original (`root@localhost`), por lo que requieren cuenta administradora; `05_permisos.sql` crea el rol `rol_kiro_app` y el usuario `kiro_app` **sin contraseña** (debe definirse en el entorno local al ejecutarlo).
-4. **Configurar la aplicación:** copiar `app/config/config.example.php` como `app/config/config.php` (ese archivo real nunca se versiona; está en `.gitignore`) y completar `usuario` y `clave` de la base `Kiro`. La plantilla no contiene credenciales.
-5. **Ejecutar la aplicación:** iniciar el servidor PHP integrado apuntando a `public/` (por ejemplo, `php -S 127.0.0.1:8000 -t public` desde la raíz del proyecto) y abrir `http://127.0.0.1:8000`. Las páginas Inicio y Configuración consultan la base con el usuario de mínimo privilegio mediante PDO.
-6. **Consultas de demostración (opcional):** `database/consultas/QUERY_01_construccion.sql` es la guía documentada del orden de construcción; `QUERY_02_consultas.sql` es un recorrido de solo lectura en 14 secciones; `QUERY_03_transacciones.sql` (SAVEPOINT sobre tabla TEMPORARY de sesión), `QUERY_04_seguridad_revoke.sql` (ciclo `GRANT`/`REVOKE` con un rol de laboratorio), `QUERY_05_concurrencia/` y `QUERY_06_subconsultas_exists.sql` (EXISTS/NOT EXISTS, solo lectura) requieren cuenta administradora. `QUERY_05_concurrencia` es un laboratorio en una base dedicada que se crea y elimina en la misma ejecución y **requiere DOS sesiones simultáneas**: los pares de scripts A/B (por ejemplo `01a_lectura_sucia_A.sql` y `01a_lectura_sucia_B.sql`) deben ejecutarse cada uno en su propia conexión, lanzándose en el orden documentado en sus encabezados y en la evidencia 11, para que las lecturas de B caigan mientras la transacción de A sigue abierta. Ninguno de estos laboratorios escribe en las tablas reales de `Kiro`.
-7. **Verificación:** los resultados esperados de cada prueba están archivados en `docs/evidencias/` (evidencias 01 a 11 más su índice), con la base resultante en 122 registros (120 semilla + 2 del laboratorio de objetos).
+3. **Crear los objetos SQL y extensiones de autenticación** ejecutando con cuenta administradora:
+   - Scripts académicos: `01_vistas.sql`, `02_funciones.sql`, `03_procedimientos.sql`, `04_triggers.sql` y `05_permisos.sql`.
+   - Scripts de identidad y control: `07_auth_tablas.sql`, `08_auth_cuentas.sql`, `09_auth_procedimientos.sql` y `10_auth_permisos.sql`.
+4. **Configurar la aplicación:** copiar `app/config/config.example.php` como `app/config/config.php` (ese archivo real nunca se versiona; está en `.gitignore`) y completar los datos de conexión para `db` (`kiro_app`) y `auth` (`kiro_auth`). La plantilla no contiene credenciales reales.
+5. **Ejecutar la aplicación:** iniciar el servidor PHP integrado apuntando a `public/` desde la raíz del proyecto:
+
+   ```bash
+   php -S 127.0.0.1:8080 -t public
+   ```
+
+6. **Direcciones de acceso independientes:**
+   - **Interfaz de usuario:** `http://127.0.0.1:8080/` o `http://127.0.0.1:8080/login.php` (registro público en `/registro.php`).
+   - **Interfaz administrativa:** `http://127.0.0.1:8080/admin/` o `http://127.0.0.1:8080/admin/login.php` (acceso diferenciado exclusivamente para administradores).
+7. **Herramientas administrativas por CLI:**
+   - Crear administrador inicial: `php tools/instalar_admin.php --correo=admin@kiro.local`
+   - Activar credencial de usuario: `php tools/activar_usuario.php --usuario=1 --codigo=<codigo>`
+   - Verificación de integridad: `php tools/huella.php --verificar`
+8. **Verificación:** los resultados esperados de cada prueba están archivados en `docs/evidencias/` (evidencias 01 a 11 más su índice), con la base resultante en 122 registros (120 semilla + 2 del laboratorio de objetos).
 
 ---
 
@@ -589,6 +605,8 @@ Solo si no desplazan el propósito principal, podrían considerarse mejoras como
 
 **Estado general: versión académica finalizada para la entrega del proyecto integral de Bases de Datos II (apartado VI del sílabo), dentro del alcance implementado y documentado.** La base de datos completa con sus objetos SQL, permisos de mínimo privilegio, pruebas transaccionales, de concurrencia, de seguridad y de respaldo, y una aplicación PHP local funcional de **solo lectura**. El chat es un panel de demostración **sin IA real**; no existe autenticación ni operaciones CRUD: son funcionalidades posteriores fuera del alcance de esta entrega.
 
+> Esta sección describe la **entrega académica** y su verificación. La evolución posterior (chat real, entidades `CONVERSACION` y `MENSAJE`, DER de 14 entidades) está documentada por separado en la [sección 18](#18-evolución-posterior-a-la-entrega-chat-14-entidades); ninguna afirmación de esa evolución debe leerse como parte de la entrega académica.
+
 El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entidad-relación de 12 entidades. La base `Kiro` (MariaDB 10.4.32) contiene las 12 tablas, sus claves, relaciones e índices, además de 4 vistas, 5 funciones almacenadas, 2 procedimientos almacenados, 2 triggers y un rol de aplicación con permisos de mínimo privilegio. La aplicación PHP local se conecta mediante PDO con consultas preparadas y consulta los datos para sus páginas Inicio y Configuración. El análisis de índices con `EXPLAIN` fue aplicado y documentado sobre consultas representativas de `Kiro` (evidencia 05). El proyecto cuenta además con un paquete de evidencias de pruebas elaborado localmente (evidencias 01 a 11 en `docs/evidencias/`) y con los scripts de consultas `database/consultas/`: `QUERY_01_construccion.sql` (guía orquestada de construcción), `QUERY_02_consultas.sql` (consultas de demostración de solo lectura), `QUERY_03_transacciones.sql` (SAVEPOINT), `QUERY_04_seguridad_revoke.sql` (ciclo `GRANT`/`REVOKE`) y `QUERY_05_concurrencia/` (concurrencia y niveles de aislamiento).
 
 | Elemento | Estado |
@@ -648,6 +666,13 @@ El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entida
 
 ## 16. Historial de cambios
 
+### 17 de noviembre de 2026
+
+- **Evolución documental del modelo: DER de 12 a 14 entidades.** Incorporación conceptual de `CONVERSACION` y `MENSAJE` para el chat real del compañero (nueva sección 18 de este documento). Nuevo diagrama `docs/diagrama-er-kiro-14.png` con su fuente reproducible `docs/diagrama-er-kiro-14.mmd`; el DER académico `docs/diagrama-er-kiro.png` y el script canónico `database/KIRO_MariaDB.sql` permanecen intactos.
+- Actualización de este README (índice, secciones 9, 15, 16 y 18), del plan técnico (`docs/PLAN_BASE_DATOS_KIRO.md`, notas de alcance y apéndice 15) y del índice de evidencias (`docs/evidencias/README.md`) con la futura evidencia del chat; las evidencias 01 a 12 no se modifican.
+- Decisión documentada: los mensajes de prueba del chat **no se insertarán manualmente con SQL**; se enviarán desde la interfaz y el backend los guardará automáticamente mediante PDO.
+- Etapa exclusivamente documental: sin SQL ejecutado, sin tablas creadas, sin cambios en `INICIO_SESION`, sin cambios de permisos y sin modificaciones de código PHP, JavaScript ni CSS. La implementación queda pendiente de autorización.
+
 ### 16 de noviembre de 2026
 
 - Generación del paquete de evidencias de pruebas en `docs/evidencias/` (evidencias **01 a 07** más su índice), todas obtenidas con consultas exclusivamente de lectura y sin credenciales: tablas y conteos reales (01), catálogo de objetos SQL (02), permisos del rol y del usuario de aplicación (03), estructura e integridad (04), análisis `EXPLAIN` de consultas representativas (05), consultas SQL avanzadas con `JOIN`, agregaciones, `GROUP BY`, `HAVING`, subconsultas, `CASE` y `UNION` (06) y respaldo lógico con `mysqldump` con restauración verificada en una base de prueba independiente (07).
@@ -703,6 +728,61 @@ El proyecto KIRO cuenta con una propuesta conceptual definida y un modelo entida
 | **Estado** | Versión académica finalizada para la entrega del proyecto integral de Bases de Datos II; sin autenticación, CRUD, IA ni despliegue cloud (funcionalidades posteriores) |
 
 > **Nota de edición:** el nombre del autor se mantiene como marcador editable. Puede actualizarse si la autoría del proyecto cambia.
+
+---
+
+## 18. Evolución posterior a la entrega: chat (14 entidades)
+
+**Estado: evolución documentada y aprobada en diseño; no implementada.** Nada de esta sección forma parte de la entrega académica de Bases de Datos II: la implementación de tablas, permisos y código está pendiente de autorización y ejecución.
+
+### 18.1. Qué cambia
+
+Tras cerrar la entrega académica, KIRO evoluciona hacia una aplicación funcional comenzando por el **chat real por texto** entre el usuario y el compañero. Para sostenerlo, el modelo pasa de **12 a 14 entidades**:
+
+| Entidad nueva | Papel | Estado |
+|---|---|---|
+| `CONVERSACION` | Unidad de chat con principio y fin: dueño (`id_usuario`), título, fecha de inicio, estado (`Abierta`/`Cerrada`) y sesión opcional (`id_sesion`, NULL hoy). | Diseñada; creación pendiente |
+| `MENSAJE` | Cada mensaje enviado dentro de una conversación: `remitente` (`USUARIO`/`KIRO`/`SISTEMA`, asignado siempre por el servidor), `contenido` y `fecha_envio`. | Diseñada; creación pendiente |
+
+![Diagrama entidad-relación de KIRO con 14 entidades](docs/diagrama-er-kiro-14.png)
+
+*Figura 2. Diagrama entidad-relación evolucionado de KIRO (14 entidades). Fuente reproducible: `docs/diagrama-er-kiro-14.mmd`.*
+
+### 18.2. Relaciones y cardinalidades
+
+| Relación | Cardinalidad | Garantía |
+|---|---|---|
+| `USUARIO` 1:N `CONVERSACION` | obligatoria en el N | FK `ON DELETE/UPDATE RESTRICT` |
+| `CONVERSACION` 1:N `MENSAJE` | 0..N estructural; en la práctica cada conversación nace con su primer mensaje (creación perezosa) | FK RESTRICT + transacción única |
+| `MENSAJE` N:1 `CONVERSACION` | obligatoria: todo mensaje pertenece a una conversación | FK RESTRICT |
+| `INICIO_SESION` 1:N `CONVERSACION` | opcional: `id_sesion` puede ser NULL (la aplicación aún no registra sesiones) | FK compuesta `(id_sesion, id_usuario)` que garantiza el mismo dueño |
+
+Además, el chat **lee** (sin FK) `PERFIL_KIRO` (personalidad, estilo, `memoria_activa`) y `RECUERDO` (memoria autorizada) como contexto de las respuestas, y queda compatible con la auditoría polimórfica de `HISTORIAL_ACCION` (`entidad_afectada` admitiría `CONVERSACION`/`MENSAJE` a futuro).
+
+### 18.3. Decisiones de diseño aprobadas
+
+1. **Nombres sin prefijo:** `CONVERSACION` y `MENSAJE`, coherentes con el resto del modelo (nombres singulares, claves `id_*`, `HISTORIAL_ACCION.entidad_afectada` almacena nombres de tabla).
+2. **Normalización:** sin atributos derivados; la actividad reciente de una conversación se obtiene con `MAX(fecha_envio)` apoyada en el índice, no con una columna redundante.
+3. **Creación perezosa:** el botón "Nueva conversación" no crea registros; la fila de `CONVERSACION` se inserta en la **misma transacción** que el primer mensaje del usuario. Si el usuario abandona sin escribir, no queda ningún registro.
+4. **Orden estable:** índice `(id_conversacion, fecha_envio, id_mensaje)`; desempata los mensajes del mismo segundo y garantiza un orden total al leer el historial.
+5. **Límite de contenido:** 2000 puntos de código Unicode por mensaje, con autoridad en PHP (`mb_strlen`, UTF-8) y verificación en el cliente (`Array.from(texto).length`); la columna `TEXT` no es la barrera, porque el servidor no está en modo estricto.
+6. **Charset y collation explícitos:** las tablas nuevas declaran `utf8mb4_unicode_ci` (el collation por defecto del servidor es `general_ci`).
+7. **Permisos de mínimo privilegio:** escritura directa de `kiro_app@127.0.0.1` sobre las dos tablas nuevas (`SELECT` + `INSERT`; `UPDATE` restringido a `titulo, estado` de `CONVERSACION`), sin rol nuevo y sin `DELETE` ni `EXECUTE`. **Pendiente de ejecutar.**
+
+### 18.4. Cómo se poblarán los datos
+
+Los mensajes de prueba **no se insertarán manualmente con SQL**: se enviarán desde la interfaz de KIRO y el backend (PHP con PDO, consultas preparadas y transacción única por intercambio) los guardará automáticamente en `CONVERSACION` y `MENSAJE`. Esto mantiene el principio de acceso controlado de la sección 11 y evita datos de demostración que no provengan del uso real de la aplicación.
+
+### 18.5. Archivos previstos (pendientes de autorización y ejecución)
+
+| Archivo | Contenido | Toca lo existente |
+|---|---|---|
+| `database/chat/01_indice_sesion.sql` | `ALTER TABLE INICIO_SESION ADD UNIQUE KEY (id_sesion, id_usuario)` para la FK compuesta | Sí (aditivo, sin cambiar datos) |
+| `database/chat/02_tablas_chat.sql` | `CREATE TABLE CONVERSACION` y `CREATE TABLE MENSAJE` | No |
+| `database/objetos/06_permisos_chat.sql` | `GRANT` de escritura del chat a `kiro_app` | No |
+| `database/chat/03_validacion_chat.sql` | Verificación de solo lectura | No |
+
+El código PHP/JS del chat (repositorio de datos, generador de respuestas por reglas, endpoint y fetch) se implementará en una etapa posterior a la de base de datos.
 
 ---
 

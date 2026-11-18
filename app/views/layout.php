@@ -16,8 +16,8 @@ $nombreCompanero = $perfil['nombre_companero'] ?? 'Kiro';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>KIRO &middot; <?= e($titulo) ?></title>
   <meta name="description" content="KIRO, tu mundo organizado con un compañero a tu lado.">
-  <link rel="stylesheet" href="assets/css/app.css?v=3">
-  <link rel="stylesheet" href="assets/css/kiro.css?v=3">
+  <link rel="stylesheet" href="assets/css/app.css?v=4">
+  <link rel="stylesheet" href="assets/css/kiro.css?v=4">
 </head>
 <body data-pagina="<?= e($paginaActiva) ?>">
 

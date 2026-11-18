@@ -1,0 +1,161 @@
+---
+title: KIRO - Diagrama Entidad-Relacion (14 entidades)
+config:
+  er:
+    layoutDirection: TB
+    minEntityWidth: 170
+    minEntityHeight: 90
+  theme: neutral
+---
+erDiagram
+    %% ============================================================
+    %% DER evolucionado de KIRO: 12 entidades academicas originales
+    %% + CONVERSACION + MENSAJE (evolucion posterior a la entrega).
+    %% La relacion CONVERSACION-MENSAJE se representa una sola vez.
+    %% ============================================================
+
+    %% --- Relaciones del nucleo academico (12 entidades, intactas) ---
+    USUARIO ||--|| REGISTRO_USUARIO : "se registra"
+    USUARIO ||--|| PERFIL_KIRO : "configura"
+    USUARIO ||--o{ INICIO_SESION : "inicia"
+    USUARIO ||--o{ CATEGORIA : "clasifica"
+    USUARIO ||--o{ PROYECTO : "dirige"
+    USUARIO ||--o{ NOTA : "escribe"
+    USUARIO ||--o{ RECURSO : "registra"
+    USUARIO ||--o{ ACTIVIDAD : "planifica"
+    USUARIO ||--o{ CITA : "agenda"
+    USUARIO ||--o{ RECUERDO : "autoriza"
+    USUARIO ||--o{ HISTORIAL_ACCION : "genera"
+    CATEGORIA |o--o{ NOTA : "clasifica"
+    CATEGORIA |o--o{ RECURSO : "define"
+    PROYECTO |o--o{ ACTIVIDAD : "agrupa"
+
+    %% --- Relaciones de la evolucion (chat) ---
+    USUARIO ||--o{ CONVERSACION : "abre"
+    INICIO_SESION |o--o{ CONVERSACION : "origina (id_sesion NULL permitido)"
+    CONVERSACION ||--o{ MENSAJE : "contiene (1:N)"
+
+    %% --- Nucleo academico ---
+    USUARIO {
+        int id_usuario PK "AUTO_INCREMENT"
+        varchar nombre "VARCHAR(100)"
+        varchar correo "VARCHAR(150) UQ"
+        varchar hash_contrasena "VARCHAR(255)"
+        datetime fecha_registro
+    }
+    REGISTRO_USUARIO {
+        int id_registro PK "AUTO_INCREMENT"
+        varchar metodo_registro "VARCHAR(50)"
+        varchar estado_verificacion "VARCHAR(30)"
+        datetime fecha_verificacion "NULL"
+        int id_usuario FK "UNIQUE"
+    }
+    PERFIL_KIRO {
+        int id_perfil PK "AUTO_INCREMENT"
+        varchar nombre_companero "VARCHAR(50)"
+        varchar personalidad "VARCHAR(50)"
+        varchar estilo_comunicacion "VARCHAR(50)"
+        varchar color_principal "VARCHAR(30)"
+        tinyint memoria_activa "BOOLEAN"
+        int id_usuario FK "UNIQUE"
+    }
+    INICIO_SESION {
+        int id_sesion PK "AUTO_INCREMENT"
+        datetime fecha_inicio
+        datetime fecha_fin "NULL"
+        varchar estado_sesion "VARCHAR(30)"
+        int id_usuario FK
+    }
+    CATEGORIA {
+        int id_categoria PK "AUTO_INCREMENT"
+        varchar nombre "VARCHAR(60)"
+        varchar descripcion "VARCHAR(200)"
+        varchar tipo "VARCHAR(20)"
+        int id_usuario FK
+    }
+    PROYECTO {
+        int id_proyecto PK "AUTO_INCREMENT"
+        varchar nombre "VARCHAR(150)"
+        text descripcion
+        date fecha_inicio
+        date fecha_fin "NULL"
+        varchar estado "VARCHAR(20)"
+        varchar prioridad "VARCHAR(20)"
+        int id_usuario FK
+    }
+    NOTA {
+        int id_nota PK "AUTO_INCREMENT"
+        varchar titulo "VARCHAR(150)"
+        text contenido
+        datetime fecha_creacion
+        datetime fecha_actualizacion
+        int id_usuario FK
+        int id_categoria FK "NULL"
+    }
+    RECURSO {
+        int id_recurso PK "AUTO_INCREMENT"
+        varchar titulo "VARCHAR(150)"
+        varchar tipo "VARCHAR(30)"
+        varchar url "VARCHAR(500)"
+        text descripcion
+        datetime fecha_registro
+        int id_usuario FK
+        int id_categoria FK "NULL"
+    }
+    ACTIVIDAD {
+        int id_actividad PK "AUTO_INCREMENT"
+        varchar titulo "VARCHAR(150)"
+        text descripcion
+        date fecha_limite
+        varchar estado "VARCHAR(20)"
+        varchar prioridad "VARCHAR(20)"
+        int id_proyecto FK "NULL"
+        int id_usuario FK
+    }
+    CITA {
+        int id_cita PK "AUTO_INCREMENT"
+        varchar titulo "VARCHAR(150)"
+        text descripcion
+        datetime fecha_inicio
+        int duracion_minutos
+        varchar lugar "VARCHAR(200)"
+        varchar estado "VARCHAR(20)"
+        int id_usuario FK
+    }
+    RECUERDO {
+        int id_recuerdo PK "AUTO_INCREMENT"
+        text contenido
+        varchar tipo "VARCHAR(40)"
+        datetime fecha_registro
+        tinyint autorizado "BOOLEAN"
+        varchar estado "VARCHAR(20)"
+        int id_usuario FK
+    }
+    HISTORIAL_ACCION {
+        int id_accion PK "AUTO_INCREMENT"
+        varchar tipo_accion "VARCHAR(50)"
+        varchar entidad_afectada "VARCHAR(50) - polimorfica"
+        int id_registro_afectado "NULL"
+        text descripcion
+        datetime fecha_accion
+        varchar actor "VARCHAR(20)"
+        varchar resultado "VARCHAR(20)"
+        int id_usuario FK
+    }
+
+    %% --- Evolucion post-entrega: chat ---
+    CONVERSACION {
+        int id_conversacion PK "AUTO_INCREMENT"
+        int id_usuario FK "NOT NULL"
+        varchar titulo "VARCHAR(150) generado por la app"
+        datetime fecha_inicio "DEFAULT CURRENT_TIMESTAMP"
+        varchar estado "Abierta - Cerrada"
+        int id_sesion FK "NULL permitido"
+    }
+    MENSAJE {
+        int id_mensaje PK "AUTO_INCREMENT"
+        int id_conversacion FK "NOT NULL"
+        varchar remitente "USUARIO - KIRO - SISTEMA"
+        text contenido "limite 2000 puntos de codigo"
+        datetime fecha_envio "DEFAULT CURRENT_TIMESTAMP"
+    }

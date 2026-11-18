@@ -11,6 +11,7 @@
 
 - `README.md` del repositorio.
 - `docs/diagrama-er-kiro.png` (DER original de 12 entidades).
+- `docs/diagrama-er-kiro-14.png` (DER evolucionado a 14 entidades, posterior a la entrega; fuente reproducible: `docs/diagrama-er-kiro-14.mmd`).
 - Decisiones aprobadas para la planificación de la base de datos.
 
 > **Alcance del documento.** Este plan describe el modelo lógico y las decisiones técnicas de la base de datos. No contiene el script ejecutable ni modifica el DER: la implementación inicial ya se realizó en MariaDB 10.4.32 y su script canónico es `database/KIRO_MariaDB.sql`. Las decisiones pendientes de la sección 7 siguen abiertas y no quedaron aprobadas por el hecho de haberse ejecutado el esquema.
@@ -61,6 +62,8 @@ No incluye:
 ### 1.3. Principios del plan
 
 1. **No se agregan ni eliminan entidades.** Se conservan las 12 entidades oficiales.
+
+   > **Nota de alcance (17 de noviembre de 2026):** este principio corresponde al plan técnico de la **entrega académica** y se cumplió tal cual. Después de la entrega se autorizó una evolución documental a **14 entidades** (`CONVERSACION` y `MENSAJE`, chat real), que no modifica este plan ni el script canónico; se describe en el apéndice de la sección 15.
 2. **Los atributos adicionales están identificados y justificados.** Solo se incorporan los aprobados.
 3. **La integridad se protege en la base de datos cuando es posible.** Cuando no lo es, se define una validación controlada en la aplicación.
 4. **La auditoría es parte del diseño, no un añadido posterior.**
@@ -975,6 +978,8 @@ Estos índices **no se consideran necesarios ni aprobados**. Su utilidad depende
 
 - [ ] Aprobar este documento como plan definitivo de base de datos.
 - [x] Confirmar que las 12 entidades son las oficiales y que no se agregarán ni eliminarán entidades.
+
+  > *Nota de alcance (17 de noviembre de 2026): la confirmación es válida para el alcance académico de este plan. La evolución posterior a 14 entidades (`CONVERSACION` y `MENSAJE`) se autorizó aparte y se documenta en la sección 15 (apéndice); no altera este checklist ni el script canónico.*
 - [x] Confirmar `USUARIO.hash_contrasena VARCHAR(255) NOT NULL`.
 - [x] Confirmar `ACTIVIDAD.id_usuario INT NOT NULL` y `id_proyecto` nullable.
 - [x] Confirmar la FK compuesta `(id_proyecto, id_usuario)`.
@@ -1008,3 +1013,45 @@ Estos índices **no se consideran necesarios ni aprobados**. Su utilidad depende
 - [ ] Aprobar la revisión técnica completa de este plan.
 
 > **Fin del plan.** Las 12 tablas, sus restricciones, los 19 índices secundarios y los datos de prueba (120 registros semilla) se implementaron en la base `Kiro` mediante `database/KIRO_MariaDB.sql`. Tras la aprobación de este plan se implementaron además los 13 objetos SQL (4 vistas, 5 funciones, 2 procedimientos, 2 triggers), el rol `rol_kiro_app` y el usuario `kiro_app@127.0.0.1` de solo lectura, y la aplicación PHP conectada (sección 8.6); el análisis `EXPLAIN` está registrado en la evidencia 05. Los pendientes de la sección 7 (dominios, eliminación lógica, concurrencia RN-07, validación polimórfica, mecanismos de registros obligatorios) siguen abiertos y no se declaran implementados. Con fecha 16 de noviembre de 2026 el proyecto alcanzó la **versión académica finalizada** para la entrega del proyecto integral de Bases de Datos II: las evidencias 01 a 11 archivan las pruebas ejecutadas (incluidas transacciones con `SAVEPOINT`, pruebas de funciones, ciclo `GRANT`/`REVOKE`, concurrencia y aislamiento, y respaldo con restauración verificada) y el README documenta la reproducción completa del proyecto desde cero. La introducción a NoSQL queda **en espera**, fuera del alcance de esta entrega.
+
+---
+
+## 15. Apéndice: evolución posterior a la entrega — chat (14 entidades)
+
+> **Naturaleza de esta sección.** Es un apéndice posterior a la entrega académica: no modifica el plan ni las secciones 1 a 14 ni el script canónico `database/KIRO_MariaDB.sql`, que permanecen como registro de la entrega. Describe la evolución autorizada del modelo de 12 a 14 entidades para el chat real del compañero.
+
+**Fecha:** 17 de noviembre de 2026 · **Estado:** diseño aprobado y documentado; implementación pendiente de autorización.
+
+### 15.1. Entidades incorporadas
+
+| Entidad | Atributos (resumen) | Claves |
+|---|---|---|
+| `CONVERSACION` | `id_conversacion INT PK AI` · `id_usuario INT NOT NULL` · `titulo VARCHAR(150) NOT NULL` (generado por la app) · `fecha_inicio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP` · `estado VARCHAR(20) NOT NULL` (`Abierta`/`Cerrada`) · `id_sesion INT NULL` | PK simple; FK compuesta `(id_sesion, id_usuario)` → `INICIO_SESION (id_sesion, id_usuario)` (requiere índice único aditivo en esa tabla); FK `id_usuario` → `USUARIO` |
+| `MENSAJE` | `id_mensaje INT PK AI` · `id_conversacion INT NOT NULL` · `remitente VARCHAR(20) NOT NULL` (`USUARIO`/`KIRO`/`SISTEMA`, asignado por el servidor) · `contenido TEXT NOT NULL` (límite 2000 puntos de código Unicode, autoridad en PHP) · `fecha_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP` | PK simple; FK `id_conversacion` → `CONVERSACION`; índice `(id_conversacion, fecha_envio, id_mensaje)` para orden total estable |
+
+Ambas tablas declararán `ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci` (el collation por defecto del servidor es `general_ci`).
+
+### 15.2. Relaciones y cardinalidades
+
+- `USUARIO` 1:N `CONVERSACION` (obligatoria en el N).
+- `CONVERSACION` 1:N `MENSAJE` (0..N estructural; creación perezosa: la conversación nace en la misma transacción que su primer mensaje, de modo que en la práctica nunca quedan conversaciones vacías).
+- `MENSAJE` N:1 `CONVERSACION` (obligatoria).
+- `INICIO_SESION` 1:N `CONVERSACION` (opcional: `id_sesion` NULL no evalúa la FK, comportamiento MATCH SIMPLE).
+- Sin FK desde `MENSAJE` hacia `PERFIL_KIRO` o `RECUERDO`: el chat las **lee** como contexto (personalidad, `memoria_activa`, recuerdos autorizados), sin duplicar su funcionalidad. La auditoría polimórfica de `HISTORIAL_ACCION` (`entidad_afectada`) admite `'CONVERSACION'`/`'MENSAJE'` si en el futuro se audita el chat.
+
+DER evolucionado: `docs/diagrama-er-kiro-14.png` (fuente: `docs/diagrama-er-kiro-14.mmd`). El DER académico de 12 entidades permanece intacto.
+
+### 15.3. Scripts previstos y su estado
+
+| Orden | Script | Contenido | Estado |
+|---|---|---|---|
+| 1 | `database/chat/01_indice_sesion.sql` | `ALTER TABLE INICIO_SESION ADD UNIQUE KEY uk_inicio_sesion_usuario (id_sesion, id_usuario)` (aditivo, sin cambiar datos) | Pendiente de autorización |
+| 2 | `database/chat/02_tablas_chat.sql` | `CREATE TABLE CONVERSACION` + `CREATE TABLE MENSAJE` | Pendiente de autorización |
+| 3 | `database/objetos/06_permisos_chat.sql` | `GRANT SELECT, INSERT` sobre ambas tablas y `GRANT UPDATE (titulo, estado)` sobre `CONVERSACION` a `kiro_app@127.0.0.1`, **directos al usuario** (en MariaDB 10.4.32 no existe `activate_all_roles_on_login` y un rol nuevo no se activaría al conectar); sin `DELETE` ni `EXECUTE` | Pendiente de autorización |
+| 4 | `database/chat/03_validacion_chat.sql` | Verificación de solo lectura (estructura, FK, índices, permisos) | Pendiente de autorización |
+
+Los permisos irán en un script nuevo sin modificar `database/objetos/05_permisos.sql` (evidencia académica intacta).
+
+### 15.4. Población de datos
+
+Los mensajes de prueba **no se insertarán manualmente mediante SQL**: se enviarán desde la interfaz de KIRO y el backend (PHP + PDO, consultas preparadas, transacción única por intercambio) los guardará automáticamente. Esto respeta el principio de acceso controlado del proyecto y mantiene la trazabilidad de los datos reales de la aplicación.

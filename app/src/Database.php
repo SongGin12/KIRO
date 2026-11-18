@@ -15,7 +15,8 @@ declare(strict_types=1);
 
 final class Database
 {
-    private static ?PDO $conexion = null;
+    /** @var array<string, PDO> Una conexion por rol ('app', 'auth', ...). */
+    private static array $conexiones = [];
 
     /** Impide crear instancias: se usa siempre Database::conectar(). */
     private function __construct()
@@ -24,11 +25,12 @@ final class Database
 
     /**
      * @param array{host:string,puerto:int,nombre:string,usuario:string,clave:string,charset:string} $config
+     * @param string $rol Nombre logico de la conexion ('app' por defecto).
      */
-    public static function conectar(array $config): PDO
+    public static function conectar(array $config, string $rol = 'app'): PDO
     {
-        if (self::$conexion instanceof PDO) {
-            return self::$conexion;
+        if (isset(self::$conexiones[$rol]) && self::$conexiones[$rol] instanceof PDO) {
+            return self::$conexiones[$rol];
         }
 
         $dsn = sprintf(
@@ -64,8 +66,8 @@ final class Database
             );
         }
 
-        self::$conexion = $pdo;
+        self::$conexiones[$rol] = $pdo;
 
-        return self::$conexion;
+        return self::$conexiones[$rol];
     }
 }

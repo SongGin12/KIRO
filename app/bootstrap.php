@@ -3,7 +3,7 @@
  * KIRO - Arranque comun de la aplicación
  * ---------------------------------------------------------------
  * Todo pasa por aquí: zona horaria, manejo de errores, carga de
- * funciones auxiliares y de las dos clases del proyecto.
+ * funciones auxiliares y de las clases del proyecto.
  *
  * Devuelve el arreglo de configuracion para que cada pagina lo use.
  */
@@ -16,7 +16,13 @@ define('KIRO_APP', __DIR__);
 // 1. Funciones de apoyo (se necesitan incluso para la pagina de error)
 require KIRO_APP . '/src/helpers.php';
 
-// 2. Configuración (config.php no esta en Git)
+// 2. Clases del proyecto (carga explicita y visible)
+require KIRO_APP . '/src/Database.php';
+require KIRO_APP . '/src/Sesion.php';
+require KIRO_APP . '/src/RepositorioInicio.php';
+require KIRO_APP . '/src/RepositorioAutenticacion.php';
+
+// 3. Configuración (config.php no esta en Git)
 $rutaConfig = KIRO_APP . '/config/config.php';
 if (!is_file($rutaConfig)) {
     $mensaje = 'Falta el archivo app/config/config.php. Copia config.example.php, renombralo y ajusta los datos de conexion.';
@@ -25,10 +31,10 @@ if (!is_file($rutaConfig)) {
 }
 $config = require $rutaConfig;
 
-// 3. Zona horaria de Bolivia (sin horario de verano, UTC-4)
+// 4. Zona horaria de Bolivia (sin horario de verano, UTC-4)
 date_default_timezone_set($config['app']['zona_horaria'] ?? 'America/La_Paz');
 
-// 4. Errores: nunca al navegador, siempre al archivo de registro
+// 5. Errores: nunca al navegador, siempre al archivo de registro
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
@@ -39,11 +45,10 @@ if (!is_dir($directorioLogs)) {
 }
 ini_set('error_log', $directorioLogs . '/error.log');
 
-// 5. Texto en UTF-8
+// 6. Texto en UTF-8
 mb_internal_encoding('UTF-8');
 
-// 6. Carga de clases (proyecto pequeno: carga explicita y visible)
-require KIRO_APP . '/src/Database.php';
-require KIRO_APP . '/src/RepositorioInicio.php';
+// 7. Sesion segura (cookie HttpOnly, SameSite, modo estricto, CSRF).
+Sesion::iniciar();
 
 return $config;

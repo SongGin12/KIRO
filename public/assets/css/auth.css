@@ -1,0 +1,172 @@
+/* =====================================================================
+   KIRO - Autenticacion (login y registro)
+   Usa las variables de color definidas en app.css.
+   ===================================================================== */
+
+.cuerpo-auth {
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 48px) 16px;
+}
+
+.auth {
+  width: 100%;
+  max-width: 470px;
+}
+
+.auth-tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra);
+  padding: clamp(26px, 5vw, 40px);
+}
+
+.auth-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.auth-marca .gato--mini {
+  width: 46px;
+  height: 46px;
+}
+
+.auth-marca-texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.auth-marca-nombre {
+  font-family: var(--fuente-firma);
+  font-size: 26px;
+  letter-spacing: .12em;
+  color: var(--tinta);
+}
+
+.auth-marca-lema {
+  font-size: 12px;
+  color: var(--tinta-2);
+}
+
+.auth h1 {
+  margin: 0 0 6px;
+  font-size: clamp(24px, 4vw, 30px);
+  line-height: 1.2;
+}
+
+.auth-intro {
+  margin: 0 0 20px;
+  color: var(--tinta-2);
+  font-size: 14px;
+}
+
+.auth-aviso {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: var(--radio-sm);
+  font-size: 13.5px;
+  border: 1px solid transparent;
+}
+
+.auth-aviso--ok {
+  background: #EFF8F0;
+  border-color: #CBE6CF;
+  color: #2F6236;
+}
+
+.auth-aviso--error {
+  background: #FFF3F1;
+  border-color: #F3CDC6;
+  color: #8A3A2C;
+}
+
+.auth-aviso ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.auth-campo {
+  margin-bottom: 15px;
+}
+
+.auth-campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tinta);
+}
+
+.auth-campo input {
+  width: 100%;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 14.5px;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 1px solid var(--borde-frio);
+  border-radius: var(--radio-sm);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.auth-campo input:focus {
+  outline: none;
+  border-color: var(--azul-300);
+  box-shadow: 0 0 0 3px rgba(175, 207, 235, .38);
+}
+
+.auth-pista {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--tinta-2);
+}
+
+.auth-boton {
+  width: 100%;
+  margin-top: 6px;
+  padding: 13px 20px;
+  border: 0;
+  border-radius: var(--radio-pill);
+  background: var(--tinta);
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+.auth-boton:hover {
+  background: var(--azul-800);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(44, 75, 108, .26);
+}
+
+.auth-pie {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde-tenue);
+  font-size: 13.5px;
+  color: var(--tinta-2);
+  text-align: center;
+}
+
+.auth-pie a {
+  color: var(--azul-700);
+  font-weight: 700;
+}
+
+.auth-pie a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .auth-tarjeta {
+    border-radius: var(--radio);
+  }
+}
